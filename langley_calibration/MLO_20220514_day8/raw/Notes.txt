@@ -1,0 +1,4 @@
+File: 5STARG_20220514_154630_RADIOMETERS.dat
+Hand edited the "state" column to be either "sun", "trans", "dark", based on
+notes and the 500nm 1x voltage. These states are what the state-machine-processor
+expects.

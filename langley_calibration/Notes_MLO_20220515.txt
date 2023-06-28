@@ -1,0 +1,294 @@
+Notes from MLO 2022, with the 5STAR/seastar prototype
+Sam's google doc: https://docs.google.com/spreadsheets/d/1UpVL5SaludG6iLV8zacmn2fsPuUYGJtqUDReNloV5w8/edit#gid=0
+
+
+2022/05/08: Day 2
+
+Initial problems with elev motor stalling. Some gearbox PT and dangling the chiller tubes off the back fixed it.
+
+Initial problems with v0.5 software tracking: PID's were flatlined. Ran 0.4 software, then back to 0.5 and now it works.
+
+Got some early morning suntracking around 04:40. Generally very cloudy this morning.
+
+cloudy tracking around 05:12
+
+elevation pid output seems to have steps every now and then. Is this play in the gearbox that causes this? 
+keeping a finger on the head seems to help
+
+fov recipe at 05:34
+recipe was wrong... it was repeating the azi. then it got cloud
+
+tweaked the recipe to do elevation fov. steps seem a bit big
+
+new elevation revipe withh smaller steps.
+started 06:19
+finished 06:26
+
+finger darks:
+vis low to high wavelengths
+starting 06:28 finishing 06:29, around 10 seconds each
+
+messed up the tracking... had to restart
+
+came down from sky-viewing at zenith, to track sun by hand
+
+nir following the barrels of vis (low to high)
+starting 06:33 finished 0.34
+
+modified the recipe for az and el fov
+started around 07:00 - 07:01
+
+restarted suntracking at 07:10
+
+Tweaking the recipe to make the FOV scans broader. Recipe 1 is now azi fov
+Recipe 2 is now elev fov
+
+started elev fov 22:11-ish. sun is too high to do azi fov. The azi tracking pid needs to settle quicker
+oops somwthing went haywire... had to cut the power
+
+khallas habibi. I'm tired of sitting in the sun trying to write labview code
+tweajed the code to fix the file header and make a display of a channel
+looks like it only saves data when the tracking is running? check this.
+
+2022/05/09: Day 3
+
+setup before sunrise pointed about 15deg abovve the horizon. did tracksun so that data would be saved
+as the sky gets brighter.
+looks like a cloud layer slightly above the horizon.
+04:24 - sun tracking with partial sun above the horizon.
+computer time was wrong. set it. got it wrong! the clock  is 2hr fast
+restarted the software and suntracking at 5:50 pm (computer time). looks like
+we're maybe off by a few seconds.
+
+darks: around 6:13  pm computer time
+first using cloth on both barrels, then another one on the vis only for better contact
+
+darks: around 6:32 pm computer time
+
+darrks: around 6:52  pm computer time
+
+darks around 19:10 computer time
+
+darks around 19:38 computer time
+
+darks around 20:00 computer time
+
+20:14 computer time starting to get some cirrus around the area of the sun
+20:22 cirrus cloud over the sun
+ended the file around 20:24
+
+20:25: elevation fov. aborted for cirrus
+20:28 azi fov, finished around 20:34
+
+20:35 started a new file
+started a elev fov
+robot went haywire at large negative pid setpoint
+pulled the breaker. got back to sun-tracking around 20:49.
+
+darks around 20:49 
+
+stoped around 20:55. gonna go indoors and try setup the zero's on the ingaas channels.
+
+did some tweaking of the ingaas dark currents with the trim pots. Data is saved as 20220509_211213_RADIOMETERS file.
+It's hard to get all three amplification levels of the ingaas to be zero at the same time.
+
+2022/5/10 06:48 (evening)
+added temperature channels to the a/d. They are:
+J7_4 (chan 35) hot block short lambda
+J7_ (chan 38) cold block ch6
+J7_ (chan 39) cold block ch9 (the other end)
+J7_ (chan 36) hot block long lambda (the other end...)
+J7 (chan 37) cold block copper heatsink
+
+
+2022/05/10: Day 4 early morning
+re-set computer clock to correct utc.
+There's an upper layer of clouds which might preclude a good langley today.
+
+started running at 15:28. we now have temperature monitoring so this might be interesting. Ambient temp is around 0-1C
+
+sun peeking over the clouds at 15:47. steered to the sun and tracking
+
+15:56 evidence of the cloud in the radiometer data.
+
+15:57 darks
+
+16:16 still on the edge of the visible cirrus clouds
+
+16:22 sun  looks to be above the visible cirrus at airmass 8-9 approx
+
+16:24 dark
+16:52 darks
+17:09 darks
+17:25 darks
+17:46 darks
+????? darks (I think I did some but maybe didn't write it down)
+18:20 darks
+18:46 darks
+19:01 darks
+19:18 darjs
+
+19:20 airmass is 1.35
+
+gonna do some FOV
+Azi first, finished at 19:28-29
+Elev, robot glitched at 19:40 at around -1.75 setpoint.
+
+19:45 started tweaking the PID on the hot block controller. Increased about 1/8 turn.
+19:48 increased about another 1/8 turn
+
+peak temp seems to introduce some noise into the temp sensors. is this from the TEC controller switching/changing polarity, which makes noise on the ground?
+
+set the gain to peak gain. Temp oscillation almplitude seems to have decresased. 
+
+set the gain to min around 19:54 to see what the other extreme is. Its not immediately clear what the optimum is.
+
+shutdown 19:56
+
+some afternoon tinkering around 00:20 on 2022/5/11. We still don't know which channels are which! Gonna work on data.
+
+in the evening (2022/5/11 06:??GMT)
+it looks like adding the temperature sensors adds noise, and changes the biasing of the photodiodes.
+
+Day 5
+2022/05/11
+
+startup 15:20
+some cirrus structure in the morning sky
+
+15:36 tracking went wonky and looked at the ground. stalled the elev motor trying to get back on sun. restarted.
+
+tracking is wonky with the sun just below the clouds, shutdown to wait for the proper sunrise
+
+15:45 tracking again
+
+16:35 messing with finger darks on ingaas
+16:36 two sets of darks with a small gap in between. Long settling time looks like it must have been a cloud.
+16:54 darks
+17:11 darks
+17:23 darks
+
+17:42 looks like cirrus around?
+
+17:45 ish darks?
+17:58 darks
+18:10 darks
+
+18:14 finger darks bottom to top (low vis wavelength to high vis wavelenght)
+
+18:40 darks
+19:02 darks
+19:20 darks
+19:32 darks
+
+19:33 start azi fov
+
+modified the elev fov recipe: removed negative setpoints below -1.65 to try to avoid robot runaway issue.
+
+stopped the software to get the ingaas diplay to run at the same speed at the vis.
+
+restarted around 19:44 and re-run azi fov
+it looks like the ingaas barrels are off in azi.
+
+19:52 stopped the instr. modified the suntracking to be +2 offset in azi, this might be the offset of the ingaas channels.
+
+ ingaas finger darks: bottom to top:
+1 greem trace which is channel 19 which is CH7_0
+2 blue trace which is channel 22 which is CH8_0
+3 yellow trace which is channel 25 which is CH9_0
+4 channel 24 responds which is CH8_4. ch 26 responds which is CH9_2.
+
+stopped to reset the normal offsets for a vis azi fov starting at 20:20
+
+did offset tracking to get some signal variability on nir. it appears that they are neg-goin, or at least ch7_0, ch8_0 and 9_0. Concluded that they are saturating while tracking.
+
+increasd the azi tracking multiplier to tighten up the response.
+
+continuing with tracking until solar noon. 
+
+20:47 darks
+21:08 darks
+21:25 darks
+21:45 darks
+
+21:55 darks & shutdown for the day.
+
+Evening:
+REmoved the temperature monitoring to improve noise performance.
+Attempted a filter change, but that would involve disassembly, and risks messing up the tracking alignment.
+
+Day 6
+2022/05/12
+startup 15:14 looking towards the horizon.
+some cirrus around this morning, but otherwise it looks like a good day. above the folding tower looks clear.
+
+robot excursion... had to pull the plug & restart 15:39
+
+15:52 darks
+16:19 definitely cirrrus around
+16:25 darks & cirrus around
+16:50 darks & cirrus around
+17:33 darks
+18:00 darks
+18:30 darks & lots of cirrus
+18:48 darks & increasing cirrus & shutdown
+
+
+Day 7
+2022/05/13
+clock is 5sec slow today
+power up 15:27
+suntracking 15:44 cirrus on the horizon over the sun and cirrus at "flag" height
+16:01 darks
+16:06 heading into some cirrus
+16:19 looks clear of cirrus now
+16:20 darks
+16:35 cirrus developing above the sun
+16:58 cirrus and darks
+17:24 darks and cirrus around the sky
+18:49 darks and cirrus appears to be clearing up
+20:50 darks and clear sky
+21:58 darks
+22:13 darks
+lots of wind blowing the instrument around, some convection forming around us. there was an excursion in AOD before this while we were doing 4STAR fiber-flexing tests. probably from the valley upwelling.
+22:19 solar noon, darks, shutdown
+
+Day 8
+2022/05/14
+computer time is good
+warmup start 15:17
+cirrus clouds are below the flag
+tracking at 15:46, clouds across the sun
+15:54 darks & clouds
+15:59 maybe just above the clouds
+16:22 darks
+16:54 darks
+17:32 possible cirrus across the sun?
+17:33 darks
+17:52 (and before) cirrus around? is there signal in the NIR? but it appears to be clearing
+18:24 darks and definitely clearing
+18:57 darks
+19:48 darjs
+20:41 shutdown
+20:41 startup.... and darks and shutdown
+
+Day 9
+2022/05/15
+full moon. moon tracking was mentioned. we can't see the setting moon from our platform for any reasonable length of time after setup.
+computer time is good
+warmup start 15:12
+sky is full of cirrus
+started tracking looking at the ground to test ingaas and high-gain
+15:21 tracking excursion. stopped tracking for now.
+lots of cirrus above the horizon up to airmass << 8
+15:44 tracking
+15:56 cirrus
+16:15 cirrus
+16:34 cirrus
+16:54 darks & cirrus
+17:34 darks & less cirrus but still lurking
+17:58 darks
+18:12 cirrus bands and solid cirrus above the sun
+18:24 lots of cirrus
+18:26 darks
+18:27 shutdown

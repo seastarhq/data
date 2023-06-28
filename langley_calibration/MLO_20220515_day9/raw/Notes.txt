@@ -1,0 +1,3 @@
+Hand edited the "state" column to be either "sun", "trans", "dark", based on
+notes and the 340nm voltage. These states are what the state-machine-processor
+expects.

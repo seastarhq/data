@@ -1,0 +1,6 @@
+%Mission: MLO2022
+%Operator: 
+%Time: 2022,05,11,06:31:51.100
+%File: C:\Users\pop\Documents\5STARG_Data\5STARG_20220511_063151_RADIOMETERS.dat
+%Notes: 
+YYYY,MM,DD,hh:mm:ss,state,elev_set,azi_set,elev_pid_out,azi_pid_out,CH1_0,CH1_2,CH1_4,CH2_0,CH2_2,CH2_4,CH3_0,CH3_2,CH3_4,CH4_0,CH4_2,CH4_4,CH5_0,CH5_2,CH5_4,Here,CH6_0,CH6_2,CH6_4,CH7_0,CH7_2,CH7_4,CH8_0,CH8_2,CH8_4,CH9_0,CH9_2,CH9_4,SPARE,5vRef_Temp,12POS_0_33,12NEG_0_33,J7_1,J7_2,J7_3,J7_4,J7_5,J7_6,J7_7,J7_8
