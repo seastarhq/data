@@ -1,0 +1,1 @@
+./do_extract_quicklooks.sh: line 3: ./extract_quicklook_robot_variables.py: No such file or directory

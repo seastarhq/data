@@ -16,3 +16,7 @@ Makefile~
 *.zip
 *.png
 *.csv_raw*
+gmt.history
+gmt.conf
+gmt.conf.old
+__pycache__/
