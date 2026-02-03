@@ -1,0 +1,24 @@
+The inter-calibration of #905 (NASA Ames) versus #1210 was done on Apr 16, 2024. However, there were ~5% less data that automatically reached L1.5V when this post-deployment calibration was applied, despite the very small changes in calibration between pre- and post deployment calibrations (see table below). Therefore only the pre-deployment calibration from Sep 01, 2022 was utilized to reprocess the field data at this site.  
+ 
+Since #905 (NASA Ames) has been post-deployment calibrated and reprocessed it will be raised to Level 2 in V3 after a 30-day delay. 
+ 
+Device 905 - Installed a new Intercal vs. reference 1210 with time stamp [16:04:2024,15:52:11]
+Preceding Intercal with time stamp [01:09:2022,18:43:08] made by Tom Eck on [18:04:2024,15:23:25] vs. reference 1236
+New Intercal with time stamp [16:04:2024,15:52:11] made by Tom Eck on [18:04:2024,14:12:17] vs. reference 1210
+592 days or ~ 19 months since preceding calibration:
+
+
+Wave   |   V0(new)   |  V0(prec)   | Diff       | Diff/Year
+1020   | 493936.8    | 493587.7    | 0.07%      | 0.04%
+1640   | 954766.9    | 953794.2    | 0.10%      | 0.06%
+870    | 819638.5    | 819119.0    | 0.06%      | 0.04%
+675    | 1030849.2   | 1032027.6   | -0.11%     | -0.07%
+440    | 808646.6    | 813072.4    | -0.54%     | -0.34%
+500    | 953944.7    | 956542.6    | -0.27%     | -0.17%
+1020   | 609534.7    | 609505.2    | 0.00%      | 0.00%
+935    | 772825.1    | 758662.2    | 1.87%      | 1.15%
+380    | 151622.2    | 151549.7    | 0.05%      | 0.03%
+340    | 25685.6     | 25556.4     | 0.51%      | 0.31%
+
+New Break with time stamp [30:03:2024,18:43:09] copied by Tom Eck on [18:04:2024,21:17:35] from Intercal with time stamp [01:09:2022,18:43:08] made by Tom Eck on [18:04:2024,15:23:25] vs. reference 1236
+
