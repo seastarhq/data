@@ -20,3 +20,4 @@ gmt.history
 gmt.conf
 gmt.conf.old
 __pycache__/
+download/

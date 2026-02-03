@@ -1,0 +1,11 @@
+ROOT_DIR=~steve/nasa/seastar/seastarhq/data/SeaSTAR-20250710-Ames_roof-general_suntracking/
+SCRIPTS_DIR=$ROOT_DIR/L0.6/quicklooks_timeseries/scripts
+RAW_DATA_DIR=$ROOT_DIR/L0.6/raw_csv
+EXTRACTED_DATA_DIR=$ROOT_DIR/L0.6/quicklooks_timeseries/extracted_txt
+PLOTS_DIR=$ROOT_DIR/L0.6/quicklooks_timeseries/plots
+L06_DATA_DIR=$ROOT_DIR/pickle
+SEASTAR_TIMEZONE=null
+AVG_INTERVAL=1
+ANALYSIS_MARGIN=0.25
+
+export ROOT_DIR SCRIPTS_DIR RAW_DATA_DIR EXTRACTED_DATA_DIR PLOTS_DIR L06_DATA_DIR SEASTAR_TIMEZONE AVG_INTERVAL ANALYSIS_MARGIN
