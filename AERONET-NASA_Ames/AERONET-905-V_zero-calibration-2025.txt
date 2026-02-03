@@ -1,0 +1,23 @@
+The inter-calibration of #905 (NASA Ames) versus #1072 was done on Dec 03, 2025. However AOD data were reprocessed using only the pre-calibration from May 01, 2024 since there were repeating diurnal cycles in AOD with minima at mid-day, negative 1640 nm AOD at mid-day plus much larger discrepancies of 1020 nm Silicon versus InGaAs AOD when the post-deployment cal was applied.
+ 
+Since #905 (NASA Ames) has been post-deployment calibrated and reprocessed it will be raised to Level 2 in V3 after a 30-day delay.
+
+Device 905 - Installed a new Intercal vs. reference 1072 with time stamp [03:12:2025,17:00:21]
+Preceding Intercal with time stamp [01:05:2024,18:25:27] made by Tom Eck on [08:12:2025,22:20:14] vs. reference 1072
+New Intercal with time stamp [03:12:2025,17:00:21] made by Tom Eck on [08:12:2025,22:17:38] vs. reference 1072
+580 days or ~ 19 months since preceding calibration:
+
+
+Wave   |   V0(new)   |  V0(prec)   | Diff       | Diff/Year
+1020   | 485706.3    | 493205.6    | -1.52%     | -0.96%
+1640   | 924634.6    | 956112.9    | -3.29%     | -2.07%
+870    | 808065.3    | 821630.4    | -1.65%     | -1.04%
+675    | 1017369.9   | 1031970.3   | -1.41%     | -0.89%
+440    | 801091.9    | 815879.1    | -1.81%     | -1.14%
+500    | 943882.6    | 958132.4    | -1.49%     | -0.93%
+1020   | 587855.9    | 608278.8    | -3.36%     | -2.11%
+935    | 775182.6    | 780014.4    | -0.62%     | -0.39%
+380    | 151455.2    | 153189.4    | -1.13%     | -0.71%
+340    | 25581.7     | 25223.1     | 1.42%      | 0.89%
+
+New Break with time stamp [21:11:2025,18:25:28] copied by Tom Eck on [08:12:2025,22:20:49] from Intercal with time stamp [01:05:2024,18:25:27] made by Tom Eck on [08:12:2025,22:20:14] vs. reference 1072
