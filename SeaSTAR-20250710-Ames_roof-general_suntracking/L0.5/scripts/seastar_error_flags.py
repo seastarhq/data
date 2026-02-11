@@ -1,5 +1,8 @@
 #!/usr/bin/env python3
 
+import scipy.stats
+import math
+
 # flag locations in the L05 arrays:
 # L05line['flags'][0] is tracking flags
 # L05line['flags'][1] is robot flags
@@ -86,6 +89,18 @@ CH12_10k_ERROR = 2048
 CH13_10k_ERROR = 4096
 CH14_100_ERROR = 8192
 
+# cloud_flags
+AUTO_CLOUD_FLAG_FAIL = 1
+TVAR_OOB = 2
+AUTO_CLOUD_CIRRUS = 4 # for future implementation...
+AUTO_CLOUD_1 = 8
+AUTO_CLOUD_2 = 16
+HAND_CLOUD_CIRRUS = 32  
+HAND_CLOUD_1 = 64
+HAND_CLOUD_2 = 128
+HAND_CLOUD_3 = 265
+
+# tracking flags get set at L0 to L04
 def calculate_tracking_flags(screeninterval,avginterval,paramsdict): #
     # params is a dict with {trackingmax,brightmin,brightmax}:
     euclidian_dist_stats = screeninterval['euclidian_dist'].describe()
@@ -101,33 +116,76 @@ def calculate_tracking_flags(screeninterval,avginterval,paramsdict): #
         trackingflags = trackingflags | CAMERA_BRIGHTNESS_OOB
     return trackingflags
 
-def calculate_robot_flags(avginterval):
-    m0_stats = avginterval['motor_0_enc'].describe()
-    m1_stats = avginterval['motor_1_enc'].describe()
-    m2_stats = avginterval['motor_2_enc'].describe()
+# remaining flags get set at L04 to L05 or later
+#def calculate_robot_flags(avginterval):
+#    m0_stats = avginterval['motor_0_enc'].describe()
+#    m1_stats = avginterval['motor_1_enc'].describe()
+#    m2_stats = avginterval['motor_2_enc'].describe()
+#    robotflags = 0
+#    # this should catch any encoder dropouts:
+#    # if none of these are true, then the robot flags will stay at the
+#    # default value of zero
+#    if (m0_stats['mean'] - m0_stats['min']) > m0_stats['std']:
+#        robotflags = robotflags | ENCODER_DROPOUT
+#    if (m1_stats['mean'] - m1_stats['min']) > m1_stats['std']:
+#        robotflags = robotflags | ENCODER_DROPOUT
+#    if (m2_stats['mean'] - m2_stats['min']) > m2_stats['std']:
+#        robotflags = robotflags | ENCODER_DROPOUT
+#    return robotflags
+
+def calculate_robot_flags(L04line):
+    m0 = L04line['motor_0_enc']
+    m0_mean = scipy.stats.describe(m0, nan_policy='omit').mean
+    m0_min = scipy.stats.describe(m0, nan_policy='omit').minmax[0].data[()]
+    m0_max = scipy.stats.describe(m0, nan_policy='omit').minmax[1].data[()]
+    m0_std = math.sqrt( scipy.stats.describe(m0, nan_policy='omit').variance )
+    m1 = L04line['motor_1_enc']
+    m1_mean = scipy.stats.describe(m1, nan_policy='omit').mean
+    m1_min = scipy.stats.describe(m1, nan_policy='omit').minmax[0].data[()]
+    m1_max = scipy.stats.describe(m1, nan_policy='omit').minmax[1].data[()]
+    m1_std = math.sqrt( scipy.stats.describe(m1, nan_policy='omit').variance )
+    m2 = L04line['motor_2_enc']
+    m2_mean = scipy.stats.describe(m2, nan_policy='omit').mean
+    m2_min = scipy.stats.describe(m2, nan_policy='omit').minmax[0].data[()]
+    m2_max = scipy.stats.describe(m2, nan_policy='omit').minmax[1].data[()]
+    m2_std = math.sqrt( scipy.stats.describe(m2, nan_policy='omit').variance )
     robotflags = 0
     # this should catch any encoder dropouts:
     # if none of these are true, then the robot flags will stay at the
     # default value of zero
-    if (m0_stats['mean'] - m0_stats['min']) > m0_stats['std']:
+    if (m0_mean - m0_min) > 2.0 *m0_std:
         robotflags = robotflags | ENCODER_DROPOUT
-    if (m1_stats['mean'] - m1_stats['min']) > m1_stats['std']:
+    if (m1_mean - m1_min) > 2.0 * m1_std:
         robotflags = robotflags | ENCODER_DROPOUT
-    if (m2_stats['mean'] - m2_stats['min']) > m2_stats['std']:
+    if (m2_mean - m2_min) > 2.0 * m2_std:
         robotflags = robotflags | ENCODER_DROPOUT
     return robotflags
 
-def calculate_housekeeping_flags(avginterval,paramsdict):
-    # paramsdict is a dict with hot block min and max (for now)
-    # we need to handle more cases here, so we have to initialize:
-    housekeepingflags = 0
-    hotblock1stats = avginterval['hot_block1_temp'].describe()
-    if hotblock1stats['mean'] > paramsdict['hotblock1max']:
-       housekeepingflags = housekeepingflags | HOT_BLOCK_1_HOT  
-    if hotblock1stats['mean'] < paramsdict['hotblock1min']:
-       housekeepingflags = housekeepingflags | HOT_BLOCK_1_COLD
-    return housekeepingflags
 
+#def calculate_housekeeping_flags(avginterval,paramsdict):
+#    # paramsdict is a dict with hot block min and max (for now)
+#    # we need to handle more cases here, so we have to initialize:
+#    housekeepingflags = 0
+#    hotblock1stats = avginterval['hot_block1_temp'].describe()
+#    if hotblock1stats['mean'] > paramsdict['hotblock1max']:
+#       housekeepingflags = housekeepingflags | HOT_BLOCK_1_HOT  
+#    if hotblock1stats['mean'] < paramsdict['hotblock1min']:
+#       housekeepingflags = housekeepingflags | HOT_BLOCK_1_COLD
+#    return housekeepingflags
+
+def calculate_housekeeping_flags(L04line,paramsdict):
+    # paramsdict is a dict with hot block min and max (for now)
+    housekeepingflags = 0
+    hotblock1 = L04line['hot_block1_temp']
+    hotblock1_min = scipy.stats.describe(hotblock1, nan_policy='omit').minmax[0].data[()]
+    hotblock1_max = scipy.stats.describe(hotblock1, nan_policy='omit').minmax[1].data[()]
+    hotblock1_mean = scipy.stats.describe(hotblock1, nan_policy='omit').mean
+    hotblock1_std = math.sqrt(scipy.stats.describe(hotblock1, nan_policy='omit').variance)
+    if hotblock1_mean > paramsdict['hotblock1max']:
+        housekeepingflags = housekeepingflags | HOT_BLOCK_1_HOT
+    if hotblock1_mean < paramsdict['hotblock1min']:
+        housekeepingflags = housekeepingflags | HOT_BLOCK_1_COLD
+    return housekeepingflags
 
 
 

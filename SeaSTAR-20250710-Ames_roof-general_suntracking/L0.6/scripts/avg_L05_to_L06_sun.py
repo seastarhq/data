@@ -27,6 +27,7 @@ seastar_timezone = pytz.timezone(SEASTAR_TIMEZONE) # we only get this from the p
 
 parser = argparse.ArgumentParser()
 parser.add_argument('file')
+parser.add_argument('-o', '--outputfile')
 parser.add_argument('--triplet_tol', type=float)
 args = parser.parse_args()
 
@@ -44,13 +45,17 @@ L05_file_time = os.path.splitext(os.path.basename(L05_npyfile))[0].split("_")[2]
 #print(f"\n\n{L05_file_date} {L05_file_time}\n\n")
 
 L05_data = np.load(L05_npyfile, allow_pickle=True)
-metadata = L05_data['metadata']
+metadata = L05_data['metadata'][()]
 L05_data = L05_data['array_data']
 
 #print(L05_data.shape)
 
 L06_data = seastar_datautils.create_L06_sun_2darray(len(L05_data))
-L06_npyfile = L06_DATA_DIR + '/' + 'SeaSTAR-L06_' + L05_file_date + "_" + L05_file_time
+if args.outputfile is None:
+    L06_npyfile = L06_DATA_DIR + '/' + 'SeaSTAR-L06_' + L05_file_date + "_" + L05_file_time
+else:
+    L06_npyfile = L06_DATA_DIR + '/' + args.outputfile
+
 
 for timestep in range(len(L05_data)):
 

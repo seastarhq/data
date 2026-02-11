@@ -7,6 +7,7 @@ import pandas as pd
 import math
 import pytz
 import argparse
+import tqdm
 
 # custom modules:
 import seastar_datautils
@@ -29,6 +30,7 @@ seastar_timezone = pytz.timezone(SEASTAR_TIMEZONE) # we only get this from the p
 
 parser = argparse.ArgumentParser()
 parser.add_argument('file')
+parser.add_argument('-o', '--outputfile')
 parser.add_argument('-i', '--interval', type=float)
 parser.add_argument('-m', '--margin', type=float)
 parser.add_argument('--trackerror', type=float)
@@ -38,7 +40,7 @@ args = parser.parse_args()
 
 # get analysis parameters from command line arguments
 # or default to values set in environment variables
-if args.interval  is not None:
+if args.interval is not None:
     avg_interval = timedelta(seconds = args.interval)
 else:
     avg_interval = timedelta(seconds = AVG_INTERVAL)
@@ -62,6 +64,12 @@ logfile_date = os.path.basename(seastar_logfile).split("_")
 sys.stderr.write(f"seastar logfile date: {logfile_date[0]}\n")
 sys.stderr.write(f"averaging interval: {avg_interval}\n")
 sys.stderr.write(f"analysis margin: {analysis_margin}\n")
+
+if args.outputfile is None: # it will automatically generate the output filename if we don't give it one
+    L04_filename = PICKLE_DIR + '/' + 'SeaSTAR_' + logfile_date[0] + "_" + logfile_date[1] + ".L04"
+else:
+    L04_filename = PICKLE_DIR + '/' + args.outputfile
+    
 
 # we use pandas: # the things we are interested in are # columns: 
 # 0=timestamp, 
@@ -101,7 +109,6 @@ sys.stderr.write(f"seastar logfile start time: {starttime}\n")
 time_final = df['datetime'][len(df)-1].round('s')
 sys.stderr.write(f"seastar logfile end time: {time_final}\n")
 
-L04_filename = PICKLE_DIR + '/' + 'SeaSTAR_' + logfile_date[0] + "_" + logfile_date[1] + ".L04"
 
 # we do three passes through the data. These will screen:
 # 1. Bad suntracking, based on euclidian distance
@@ -148,15 +155,14 @@ sys.stderr.write("creating the 3-d L04 array...")
 L05_3d_array = seastar_datautils.create_L05_3darray(timesteps)
 sys.stderr.write("\n")
 
-for timestep in range(timesteps):
+for timestep in tqdm.tqdm(range(timesteps), desc="Timesteps"):
 
-    sys.stderr.write(f"timestep: {timestep}\n")
+    #sys.stderr.write(f"timestep: {timestep}\n")
 
 # this function creates a 2-d array of NaT/NaN/0 for each timestep from the df dataframe
 # which then get put into the appropriate timestep of the L04array
-    sys.stderr.write("creating the 2-d L04 array...\n")
+    #sys.stderr.write("creating the 2-d L04 array...\n")
     L05_2d_line = seastar_datautils.create_L05_2darray()
-    sys.stderr.write(f"{L05_2d_line[0][2]}\n")
 
 # we calculate statistics for each avg_interval, from these we can see 
 # bad suntracking - max euclidian distance bigger than theshold
@@ -166,7 +172,7 @@ for timestep in range(timesteps):
 # we start with the first avg_interval to create the first layer of the 3-d array, then go into a loop
 
     time1 = time0 + avg_interval
-    sys.stderr.write(f"time 1: {time1}\n\n")
+    #sys.stderr.write(f"time 1: {time1}\n\n")
 
     screeninterval = df.loc[df['datetime'] < time1] # screeninterval is a pandas dataframe extended backwards in time compared to avginterval, which we use to screen bad suntracking
     screeninterval = screeninterval.loc[(time0 - analysis_margin) < screeninterval['datetime']]
@@ -210,10 +216,10 @@ for timestep in range(timesteps):
                 0)   # 0 is what we set the initial flags to, 
         
         
-# we don't do flagging at L04 anymore
-#then set them once we've filled up the L04array
+# we don't do all the flagging at L04 anymore
+# only for bad tracking.
 
-# flag locations in the L05 arrays:
+# flag locations in the L04/5 arrays:
 # are described in seastar_error_flags.py: (that is the canonical location)
 # L05_2d_line['flags'][0] is tracking flags
 # L05_2d_line['flags'][1] is robot flags
@@ -222,10 +228,10 @@ for timestep in range(timesteps):
 #                   [4] is 100x radiometer flags
 #                   [5] is 10kx radiometer flags
 
-#    sys.stderr.write("camera stats and flagging...")
-#    trackingparams = {"trackingmax": TRACKING_EUCLIDIAN_MAX, "brightmin": BRIGHTNESS_MIN, "brightmax": BRIGHTNESS_MAX}
-#    L05_2d_line['flags'][0] = calculate_tracking_flags(screeninterval,avginterval,trackingparams) # trackingflags
-#    sys.stderr.write("\n")
+    #sys.stderr.write("camera stats and flagging...")
+    trackingparams = {"trackingmax": TRACKING_EUCLIDIAN_MAX, "brightmin": BRIGHTNESS_MIN, "brightmax": BRIGHTNESS_MAX}
+    L05_2d_line['flags'][0] = calculate_tracking_flags(screeninterval,avginterval,trackingparams) # trackingflags
+    #sys.stderr.write("\n")
 
 #    sys.stderr.write("robot stats and flagging...")
 # robot flags doesn't need parameters for now
@@ -245,7 +251,7 @@ for timestep in range(timesteps):
 # save the L04_3d_array as a pickle file:
 
 sys.stderr.write(f"saving the L04 3d array as: {L04_filename}")
-
+proc_time =datetime.now(pytz.utc).isoformat()
 
 
 metadata = {'RAW_FILE': args.file,\
@@ -266,14 +272,18 @@ metadata = {'RAW_FILE': args.file,\
         'HOT_BLOCK2_MAX': HOT_BLOCK2_MAX,\
         'COLD_BLOCK_MIN': COLD_BLOCK_MIN,\
         'COLD_BLOCK_MAX': COLD_BLOCK_MAX,\
-        'COLD_BLOCK_MAX': COLD_BLOCK_MAX,\
         'IMU_TEMP_MIN': IMU_TEMP_MIN,\
         'IMU_TEMP_MAX': IMU_TEMP_MAX,\
         'IMU_PRESS_MIN': IMU_PRESS_MIN,\
-        'IMU_PRESS_MAX': IMU_PRESS_MAX } 
+        'IMU_PRESS_MAX': IMU_PRESS_MAX,\
+        'L0-to-L04_PROCESSING_TIME': proc_time } 
 
-with open(L04_filename, 'bw') as arrayfile:
-    np.savez(arrayfile, array_data = L04_3d_array, metadata = metadata)
+try:
+    with open(L04_filename, 'bw') as arrayfile:
+        np.savez(arrayfile, array_data = L05_3d_array, metadata = metadata)
+except FileNotFoundError:
+    with open('recoveryfilename.L04', 'bw') as arrayfile:
+        np.savez(arrayfile, array_data = L05_3d_array, metadata = metadata)
 
 
 
