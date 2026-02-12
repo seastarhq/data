@@ -5,6 +5,7 @@ import numpy as np
 import math
 import argparse
 import pytz
+import tqdm
 
 # custom seastar modules
 import seastar_datautils
@@ -23,8 +24,6 @@ from seastar_filepaths import *
 # TRIPLETVAR_TOLERANCE_PERCENT
 from seastar_analysis_params import *
 
-seastar_timezone = pytz.timezone(SEASTAR_TIMEZONE) # we only get this from the parameters file, not cli 
-
 parser = argparse.ArgumentParser()
 parser.add_argument('file')
 parser.add_argument('-o', '--outputfile')
@@ -34,7 +33,7 @@ args = parser.parse_args()
 # get analysis parameters from command line arguments, by overriding what's read in in the import above
 # or default to values set in environment variables
 if args.triplet_tol is not None:
-    TRIPLET_TOLERANCE = args.trackerror
+    TRIPLET_TOLERANCE = args.triplet_tol
 
 # findFile needs a list passed to it, so we make one with length 1
 L05_data_dir = [L05_DATA_DIR,]
@@ -48,6 +47,8 @@ L05_data = np.load(L05_npyfile, allow_pickle=True)
 metadata = L05_data['metadata'][()]
 L05_data = L05_data['array_data']
 
+seastar_timezone = pytz.timezone(metadata['SEASTAR_TIMEZONE']) 
+
 #print(L05_data.shape)
 
 L06_data = seastar_datautils.create_L06_sun_2darray(len(L05_data))
@@ -57,7 +58,7 @@ else:
     L06_npyfile = L06_DATA_DIR + '/' + args.outputfile
 
 
-for timestep in range(len(L05_data)):
+for timestep in tqdm.tqdm(range(len(L05_data))):
 
     L06_data['datetime'] = min(L05_data[timestep][:]['datetime'])
     #motor_0_enc = np.nan # not important?
@@ -99,8 +100,15 @@ for timestep in range(len(L05_data)):
     L06_data['radiometer_10kx_flags'] = L05_data[timestep][5]['flags']
     L06_data['cloud_flags'] = 0
 
+proc_time = datetime.now(pytz.utc).isoformat()
+metadata['L05-to-L06_PROCESSING_TIME'] = proc_time
 
-np.savez(L06_npyfile, array_data=L06_data, metadata = metadata)
+try:
+    with open(L06_npyfile, 'bw') as arrayfile:
+        np.savez(arrayfile, array_data=L06_data, metadata = metadata)
+except FileNotFoundError:
+    with open('recoveryfilename.L06', 'bw') as arrayfile:
+        np.savez(arrayfile, array_data=L06_data, metadata = metadata)
 
 
 

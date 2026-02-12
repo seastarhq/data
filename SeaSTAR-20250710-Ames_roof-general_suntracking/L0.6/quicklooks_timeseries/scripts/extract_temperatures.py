@@ -5,6 +5,7 @@ import numpy as np
 import argparse
 from datetime import *
 import pytz
+import tqdm
 
 import seastar_datautils
 from seastar_error_flags import *
@@ -21,7 +22,6 @@ from seastar_filepaths import *
 # IMU_TEMP_MIN IMU_TEMP_MAX IMU_PRESS_MIN IMU_PRESS_MAX
 # TRIPLETVAR_TOLERANCE_PERCENT TRIPLETVAR_TIME
 #from seastar_analysis_params import *
-
 
 parser = argparse.ArgumentParser()
 parser.add_argument('file')

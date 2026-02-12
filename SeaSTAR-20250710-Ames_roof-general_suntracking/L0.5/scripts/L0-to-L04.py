@@ -34,8 +34,8 @@ parser.add_argument('-o', '--outputfile')
 parser.add_argument('-i', '--interval', type=float)
 parser.add_argument('-m', '--margin', type=float)
 parser.add_argument('--trackerror', type=float)
-parser.add_argument('-brightmin', type=float)
-parser.add_argument('-brightmax', type=float)
+parser.add_argument('--brightmin', type=float)
+parser.add_argument('--brightmax', type=float)
 args = parser.parse_args()
 
 # get analysis parameters from command line arguments
@@ -65,7 +65,8 @@ sys.stderr.write(f"seastar logfile date: {logfile_date[0]}\n")
 sys.stderr.write(f"averaging interval: {avg_interval}\n")
 sys.stderr.write(f"analysis margin: {analysis_margin}\n")
 
-if args.outputfile is None: # it will automatically generate the output filename if we don't give it one
+# automatically generate the output filename if we don't give it one
+if args.outputfile is None: 
     L04_filename = PICKLE_DIR + '/' + 'SeaSTAR_' + logfile_date[0] + "_" + logfile_date[1] + ".L04"
 else:
     L04_filename = PICKLE_DIR + '/' + args.outputfile
@@ -155,9 +156,9 @@ sys.stderr.write("creating the 3-d L04 array...")
 L05_3d_array = seastar_datautils.create_L05_3darray(timesteps)
 sys.stderr.write("\n")
 
-for timestep in tqdm.tqdm(range(timesteps), desc="Timesteps"):
+for timestep in range(timesteps):
 
-    #sys.stderr.write(f"timestep: {timestep}\n")
+    sys.stderr.write(f"timestep: {timestep}\n")
 
 # this function creates a 2-d array of NaT/NaN/0 for each timestep from the df dataframe
 # which then get put into the appropriate timestep of the L04array
@@ -174,9 +175,9 @@ for timestep in tqdm.tqdm(range(timesteps), desc="Timesteps"):
     time1 = time0 + avg_interval
     #sys.stderr.write(f"time 1: {time1}\n\n")
 
-    screeninterval = df.loc[df['datetime'] < time1] # screeninterval is a pandas dataframe extended backwards in time compared to avginterval, which we use to screen bad suntracking
+    screeninterval = df.loc[df['datetime'] < time1] # screeninterval is a dataframe extended backwards in time compared to avginterval, which we use to screen bad suntracking
     screeninterval = screeninterval.loc[(time0 - analysis_margin) < screeninterval['datetime']]
-    avginterval = df.loc[df['datetime'] < time1]  # avginterval is a pandas dataframe
+    avginterval = df.loc[df['datetime'] < time1]  # avginterval is a pandas dataframe, without the backward extension
     avginterval = avginterval.loc[time0 < avginterval['datetime']]
 
     for i in range(len(avginterval)):
@@ -217,7 +218,7 @@ for timestep in tqdm.tqdm(range(timesteps), desc="Timesteps"):
         
         
 # we don't do all the flagging at L04 anymore
-# only for bad tracking.
+# only bad tracking, using the screeninterval
 
 # flag locations in the L04/5 arrays:
 # are described in seastar_error_flags.py: (that is the canonical location)
@@ -228,21 +229,8 @@ for timestep in tqdm.tqdm(range(timesteps), desc="Timesteps"):
 #                   [4] is 100x radiometer flags
 #                   [5] is 10kx radiometer flags
 
-    #sys.stderr.write("camera stats and flagging...")
     trackingparams = {"trackingmax": TRACKING_EUCLIDIAN_MAX, "brightmin": BRIGHTNESS_MIN, "brightmax": BRIGHTNESS_MAX}
     L05_2d_line['flags'][0] = calculate_tracking_flags(screeninterval,avginterval,trackingparams) # trackingflags
-    #sys.stderr.write("\n")
-
-#    sys.stderr.write("robot stats and flagging...")
-# robot flags doesn't need parameters for now
-#    L05_2d_line['flags'][1] = calculate_robot_flags(avginterval)
-#    sys.stderr.write("\n")
-
-#    sys.stderr.write("housekeeping stats and flagging...")
-# for now we only worry about the hot block temp
-#    housekeepingparams = {"hotblock1min": HOT_BLOCK1_MIN, "hotblock1max": HOT_BLOCK1_MAX}
-#    L05_2d_line['flags'][2] = calculate_housekeeping_flags(avginterval,housekeepingparams)
-
 
     L05_3d_array[timestep] = L05_2d_line
 
