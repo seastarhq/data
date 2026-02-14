@@ -29,6 +29,7 @@ args = parser.parse_args()
 
 # findfile needs a list passed to it, so we make one with length 1
 print(L06_DATA_DIR)
+rd
 L06_datadir = [L06_DATA_DIR,]
 
 L06_npyfile = seastar_datautils.findFile(args.file, L06_datadir)

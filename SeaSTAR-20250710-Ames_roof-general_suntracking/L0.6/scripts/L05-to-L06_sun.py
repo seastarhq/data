@@ -35,11 +35,15 @@ args = parser.parse_args()
 if args.triplet_tol is not None:
     TRIPLET_TOLERANCE = args.triplet_tol
 
-# findFile needs a list passed to it, so we make one with length 1
-L05_data_dir = [L05_DATA_DIR,]
+# findFile needs a list passed to it, so we make one with `cwd` added 
+L05_data_dir = [L05_DATA_DIR, './']
 L05_npyfile = seastar_datautils.findFile(args.file, L05_data_dir)
-L05_file_date = os.path.splitext(os.path.basename(L05_npyfile))[0].split("_")[1]
-L05_file_time = os.path.splitext(os.path.basename(L05_npyfile))[0].split("_")[2]
+# this is if our filename does not conform to convention
+try:
+    L05_file_date = os.path.splitext(os.path.basename(L05_npyfile))[0].split("_")[1]
+    L05_file_time = os.path.splitext(os.path.basename(L05_npyfile))[0].split("_")[2]
+except: 
+    pass
 
 #print(f"\n\n{L05_file_date} {L05_file_time}\n\n")
 
@@ -60,7 +64,7 @@ else:
 
 for timestep in tqdm.tqdm(range(len(L05_data))):
 
-    L06_data['datetime'] = min(L05_data[timestep][:]['datetime'])
+    L06_data[timestep]['datetime'] = min(L05_data[timestep][:]['datetime'])
     #motor_0_enc = np.nan # not important?
     #motor_1_enc = np.nan # not important?
     #motor_2_enc = np.nan
@@ -68,37 +72,37 @@ for timestep in tqdm.tqdm(range(len(L05_data))):
     #quaternion_x = np.nan
     #quaternion_y = np.nan
     #quaternion_z = np.nan
-    L06_data['sun_ephem_az'] = np.nanmean(L05_data[timestep][:]['sun_ephem_az'])
-    L06_data['sun_ephem_elev'] = np.nanmean(L05_data[timestep][:]['sun_ephem_elev'])
-    L06_data['camera_sun_x'] = np.nanmean(L05_data[timestep][:]['camera_sun_x'])
-    L06_data['camera_sun_y'] = np.nanmean(L05_data[timestep][:]['sun_ephem_elev'])
-    L06_data['camera_sun_brightness'] = np.nanmean(L05_data[timestep][:]['sun_ephem_elev'])
-    L06_data['camera_target_x'] = np.nanmean(L05_data[timestep][:]['sun_ephem_elev'])
-    L06_data['camera_target_y'] = np.nanmean(L05_data[timestep][:]['sun_ephem_elev'])
+    L06_data[timestep]['sun_ephem_az'] = np.nanmean(L05_data[timestep][:]['sun_ephem_az'])
+    L06_data[timestep]['sun_ephem_elev'] = np.nanmean(L05_data[timestep][:]['sun_ephem_elev'])
+    L06_data[timestep]['camera_sun_x'] = np.nanmean(L05_data[timestep][:]['camera_sun_x'])
+    L06_data[timestep]['camera_sun_y'] = np.nanmean(L05_data[timestep][:]['sun_ephem_elev'])
+    L06_data[timestep]['camera_sun_brightness'] = np.nanmean(L05_data[timestep][:]['sun_ephem_elev'])
+    L06_data[timestep]['camera_target_x'] = np.nanmean(L05_data[timestep][:]['sun_ephem_elev'])
+    L06_data[timestep]['camera_target_y'] = np.nanmean(L05_data[timestep][:]['sun_ephem_elev'])
     #angular_vx = np.nan
     #angular_vy = np.nan
     #angular_vz = np.nan
     #linear_ax = np.nan
     #linear_ay = np.nan
     #linear_az = np.nan
-    L06_data['imu_temp'] = np.nanmean(L05_data[timestep][:]['imu_temp'])
-    L06_data['imu_press'] = np.nanmean(L05_data[timestep][:]['imu_press'])
-    L06_data['imu_lat'] = np.nanmean(L05_data[timestep][:]['imu_lat'])
-    L06_data['imu_lon'] = np.nanmean(L05_data[timestep][:]['imu_lon'])
-    L06_data['ch1_1x'] = np.nanmean(L05_data[timestep][:]['ch1_1x'])
-    L06_data['ch2_1x'] = np.nanmean(L05_data[timestep][:]['ch2_1x'])
-    L06_data['ch3_1x'] = np.nanmean(L05_data[timestep][:]['ch3_1x'])
-    L06_data['ch4_1x'] = np.nanmean(L05_data[timestep][:]['ch4_1x'])
-    L06_data['ch5_1x'] = np.nanmean(L05_data[timestep][:]['ch5_1x'])
-    L06_data['hot_block1_temp'] = np.nanmean(L05_data[timestep][:]['hot_block1_temp'])
-    L06_data['euclidian_dist'] = np.nanmax(L05_data[timestep][:]['euclidian_dist'])
-    L06_data['tracking_flags'] = L05_data[timestep][0]['flags']
-    L06_data['robot_flags'] = L05_data[timestep][1]['flags']
-    L06_data['housekeeping_flags'] = L05_data[timestep][2]['flags']
-    L06_data['radiometer_1x_flags'] = L05_data[timestep][3]['flags']
-    L06_data['radiometer_100x_flags'] = L05_data[timestep][4]['flags']
-    L06_data['radiometer_10kx_flags'] = L05_data[timestep][5]['flags']
-    L06_data['cloud_flags'] = 0
+    L06_data[timestep]['imu_temp'] = np.nanmean(L05_data[timestep][:]['imu_temp'])
+    L06_data[timestep]['imu_press'] = np.nanmean(L05_data[timestep][:]['imu_press'])
+    L06_data[timestep]['imu_lat'] = np.nanmean(L05_data[timestep][:]['imu_lat'])
+    L06_data[timestep]['imu_lon'] = np.nanmean(L05_data[timestep][:]['imu_lon'])
+    L06_data[timestep]['ch1_1x'] = np.nanmean(L05_data[timestep][:]['ch1_1x'])
+    L06_data[timestep]['ch2_1x'] = np.nanmean(L05_data[timestep][:]['ch2_1x'])
+    L06_data[timestep]['ch3_1x'] = np.nanmean(L05_data[timestep][:]['ch3_1x'])
+    L06_data[timestep]['ch4_1x'] = np.nanmean(L05_data[timestep][:]['ch4_1x'])
+    L06_data[timestep]['ch5_1x'] = np.nanmean(L05_data[timestep][:]['ch5_1x'])
+    L06_data[timestep]['hot_block1_temp'] = np.nanmean(L05_data[timestep][:]['hot_block1_temp'])
+    L06_data[timestep]['euclidian_dist'] = np.nanmax(L05_data[timestep][:]['euclidian_dist'])
+    L06_data[timestep]['tracking_flags'] = L05_data[timestep][0]['flags']
+    L06_data[timestep]['robot_flags'] = L05_data[timestep][1]['flags']
+    L06_data[timestep]['housekeeping_flags'] = L05_data[timestep][2]['flags']
+    L06_data[timestep]['radiometer_1x_flags'] = L05_data[timestep][3]['flags']
+    L06_data[timestep]['radiometer_100x_flags'] = L05_data[timestep][4]['flags']
+    L06_data[timestep]['radiometer_10kx_flags'] = L05_data[timestep][5]['flags']
+    L06_data[timestep]['cloud_flags'] = 0
 
 proc_time = datetime.now(pytz.utc).isoformat()
 metadata['L05-to-L06_PROCESSING_TIME'] = proc_time

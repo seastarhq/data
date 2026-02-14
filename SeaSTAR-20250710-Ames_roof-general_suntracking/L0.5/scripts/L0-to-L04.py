@@ -56,7 +56,7 @@ if args.brightmax is not None:
     BRIGHTNESS_MAX = args.brightmax
 
 # findFile needs a list passed to it, so we make one of length 1: 
-raw_data_dirs = [RAW_DATA_DIR,]
+raw_data_dirs = [RAW_DATA_DIR, './']
 seastar_logfile = seastar_datautils.findFile(args.file,raw_data_dirs)
 
 logfile_date = os.path.basename(seastar_logfile).split("_")
