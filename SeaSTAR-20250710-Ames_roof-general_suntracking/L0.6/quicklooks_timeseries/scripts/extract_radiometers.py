@@ -43,12 +43,15 @@ seastar_timezone = pytz.timezone(metadata['SEASTAR_TIMEZONE'])
 for timestep in range(len(L06_data)):
 
     timestamp = L06_data[timestep]['datetime'].astype(datetime)
-    imu_temp = L06_data[timestep]['imu_temp']
-    hot_block1_temp = L06_data[timestep]['hot_block1_temp']
-    housekeeping_flags = L06_data[timestep]['housekeeping_flags']
+    ch1_1x = L06_data[timestep]['ch1_1x']
+    ch2_1x = L06_data[timestep]['ch2_1x']
+    ch3_1x = L06_data[timestep]['ch3_1x']
+    ch4_1x = L06_data[timestep]['ch4_1x']
+    ch5_1x = L06_data[timestep]['ch5_1x']
+    radiometer_flags = L06_data[timestep]['radiometer_1x_flags']
 
 
-    sys.stdout.write(f"{timestamp.isoformat()} {imu_temp} {hot_block1_temp} {housekeeping_flags}\n")
+    sys.stdout.write(f"{timestamp.isoformat()} {ch1_1x} {ch2_1x} {ch3_1x} {ch4_1x} {ch5_1x} {radiometer_flags}\n")
 
 
 
