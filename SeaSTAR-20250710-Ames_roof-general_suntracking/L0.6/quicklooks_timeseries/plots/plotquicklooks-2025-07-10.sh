@@ -37,14 +37,23 @@ cat $DATAFILE | awk '{print $1, $5*-1.0}' | psxy -J$PROJECTION -R$REGION -Sc0.05
 cat $DATAFILE | awk '{print $1, $6*-1.0}' | psxy -J$PROJECTION -R$REGION -Sc0.05c -G$GREY -O -K >> $OUTFILE
 
 # Plot the tracking data - range is 0.4-0.6
-#REGION=`$SCRIPTS_DIR/get_timeseries_region.py $DATAFILE`/0.4/0.6
-#psbasemap -J$PROJECTION -R$REGION -Bpx2m -Bpy0.25 -By+l"Tracking / FFOV" -BWesn -K -O -Y-3.5c >> $OUTFILE
-#cat $DATAFILE | awk '{print $1, $26}' | psxy -J$PROJECTION -R$REGION -Sc0.05c -G$REDPURPLE -O -K >> $OUTFILE
-#cat $DATAFILE | awk '{print $1, $27}' | psxy -J$PROJECTION -R$REGION -Sc0.05c -G$BLUEGREEN -O -K >> $OUTFILE
+DATAFILE=$EXTRACTED_DATA_DIR/$FILEPREFIX-tracking.txt
+REGION=`$SCRIPTS_DIR/get_timeseries_region.py $DATAFILE`/0.4/0.6
+psbasemap -J$PROJECTION -R$REGION -Bpx2m -Bpy0.25 -By+l"Tracking / FFOV" -BWesn -K -O -Y-3.5c >> $OUTFILE
+cat $DATAFILE | awk '{print $1, $3}' | psxy -J$PROJECTION -R$REGION -Sc0.05c -G$REDPURPLE -O -K >> $OUTFILE
+cat $DATAFILE | awk '{print $1, $4}' | psxy -J$PROJECTION -R$REGION -Sc0.05c -G$BLUEGREEN -O -K >> $OUTFILE
 ## plot the camera brightness - range is 0-255, on the same plot as above
-#REGION=`$SCRIPTS_DIR/get_timeseries_region.py $DATAFILE`/0/255
-#psbasemap -J$PROJECTION -R$REGION -Bpx2m -Bpy255 -By+l"Cam Bright" -BwEsn -K -O >> $OUTFILE
-#cat $DATAFILE | awk '{print $1, $28}' | psxy -J$PROJECTION -R$REGION -Sc0.05c -G$GREY -O -K >> $OUTFILE
+REGION=`$SCRIPTS_DIR/get_timeseries_region.py $DATAFILE`/0/255
+psbasemap -J$PROJECTION -R$REGION -Bpx2m -Bpy255 -By+l"Cam Bright" -BwEsn -K -O >> $OUTFILE
+cat $DATAFILE | awk '{print $1, $5}' | psxy -J$PROJECTION -R$REGION -Sc0.05c -G$GREY -O -K >> $OUTFILE
+# plot the tracking error - range is 0-0.01?
+REGION=`$SCRIPTS_DIR/get_timeseries_region.py $DATAFILE`/0/0.01
+psbasemap -J$PROJECTION -R$REGION -Bpx2m -Bpy255 -By+l"Cam Bright" -BwEsn -K -O >> $OUTFILE
+cat $DATAFILE | awk '{print $1, $2}' | psxy -J$PROJECTION -R$REGION -Sc0.05c -G$ORANGE -O -K >> $OUTFILE
+# plot the tracking flags - range is 0-2?
+REGION=`$SCRIPTS_DIR/get_timeseries_region.py $DATAFILE`/0/2
+psbasemap -J$PROJECTION -R$REGION -Bpx2m -Bpy255 -By+l"Cam Bright" -BwEsn -K -O >> $OUTFILE
+cat $DATAFILE | awk '{print $1, $8}' | psxy -J$PROJECTION -R$REGION -Sc0.05c -G$VERMILLION -O -K >> $OUTFILE
 
 # Plot the target data - range is 0.4-0.6
 #REGION=`$SCRIPTS_DIR/get_timeseries_region.py $DATAFILE`/0.4/0.6
