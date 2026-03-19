@@ -25,3 +25,4 @@ IMU_PRESS_MAX = float(os.environ['IMU_PRESS_MAX'])
 TRIPLET_TOLERANCE = float(os.environ['TRIPLETVAR_TOLERANCE_PERCENT'])  # in percent...
 TRIPLET_TIME = float(os.environ['TRIPLETVAR_TIME'])  # in timesteps + and - (timesteps are currently seconds)
 
+TEMP_TRIPLET_TIME = float(os.environ['TEMP_TRIPLET_TIME'])

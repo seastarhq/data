@@ -7,3 +7,6 @@
 #                   [3] is 1x radiometer flags
 #                   [4] is 100x radiometer flags
 #                   [5] is 10kx radiometer flags
+
+
+# cloud flags are in error_flags.py

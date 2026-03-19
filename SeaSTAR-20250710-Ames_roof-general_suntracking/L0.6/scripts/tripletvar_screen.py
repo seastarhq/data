@@ -5,6 +5,7 @@ import numpy as np
 import math
 import argparse
 import pytz
+import datetime
 
 # custom seastar modules
 import seastar_datautils
@@ -85,8 +86,11 @@ for timestep in range(len(L06_data)):
         if abs(ch5_triplet[1] - ch5_triplet[0] / ch5_triplet[1]) > TRIPLET_TOLERANCE*100.0 or abs(ch5_triplet[1] - ch5_triplet[2] / ch5_triplet[1]) > TRIPLET_TOLERANCE*100.0:
             L06_data[timestamp]['cloud_flags'] = 2
 
-triplet_metadata = {'TRIPLETVAR_TOLERANCE_PERCENT': TRIPLET_TOLERANCE, 'TRIPLETVAR_TIME': TRIPLET_TIME}
+now = datetime.now().isoformat()
+triplet_metadata = {'TRIPLETVAR_TOLERANCE_PERCENT': TRIPLET_TOLERANCE, 'TRIPLETVAR_TIME': TRIPLET_TIME, 'LAST_PROCESSING_TIME': now}
 metadata.update(triplet_metadata)
+print(metadata)
+print(L06_npyfile)
 
 
 np.savez(L06_npyfile, array_data=L06_data, metadata = metadata)

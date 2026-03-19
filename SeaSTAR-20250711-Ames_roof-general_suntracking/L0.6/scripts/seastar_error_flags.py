@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
 
+import scipy.stats
+import math
 # flag locations in the L05 arrays:
 # L05line['flags'][0] is tracking flags
 # L05line['flags'][1] is robot flags
@@ -37,6 +39,7 @@ POLARIZER_PLATE_TEMP_OOB = 1024
 AD_TEMP_OOB = 2048
 HAMB_TEMP_OOB  = 4096
 HUMIDITY_HIGH = 8192
+DTDT_ERROR = 16384   # dtemp/dtime - indicates heater is on which affects the radiometers
 
 # radiometer_1x_error flags
 CH1_1_ERROR = 1
@@ -89,7 +92,7 @@ CH14_100_ERROR = 8192
 # cloud_flags
 AUTO_CLOUD_FLAG_FAIL = 1
 TVAR_OOB = 2
-AUTO_CLOUD_CIRRUS = 4 # for future implementation...
+AUTO_CLOUD_CIRRUS = 4 # for future implementation
 AUTO_CLOUD_1 = 8
 AUTO_CLOUD_2 = 16
 HAND_CLOUD_CIRRUS = 32  
@@ -140,6 +143,23 @@ def calculate_housekeeping_flags(avginterval,paramsdict):
     return housekeepingflags
 
 
+
+# quick flag tutorial
+
+# setting and combining flags:
+# myflags = FLAG_A | FLAG_B  
+
+# checking if a flag is set: 
+# if myflags & FLAG_A:
+#   print("flag A is set")   # true
+# if myflags & FLAG_C:
+#   print("flag B is set")   # false
+
+# adding a flag:
+# myflags |= FLAG_B    # FLAG_B is now set
+
+# removing a flag: 
+# myflags &= ~FLAG_C    # FLAG_A and FLAG_B remain
 
 
 

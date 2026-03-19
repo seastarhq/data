@@ -40,6 +40,8 @@ POLARIZER_PLATE_TEMP_OOB = 1024
 AD_TEMP_OOB = 2048
 HAMB_TEMP_OOB  = 4096
 HUMIDITY_HIGH = 8192
+DTDT_ERROR = 16384   # dtemp/dtime - indicates heater is on which affects the radiometers
+
 
 # radiometer_1x_error flags
 CH1_1_ERROR = 1
@@ -172,6 +174,25 @@ def calculate_housekeeping_flags(avginterval,paramsdict):
     if hotblock1stats['mean'] < paramsdict['hotblock1min']:
        housekeepingflags = housekeepingflags | HOT_BLOCK_1_COLD
     return housekeepingflags
+
+
+
+# quick flag tutorial
+
+# setting and combining flags:
+# myflags = FLAG_A | FLAG_B  
+
+# checking if a flag is set: 
+# if myflags & FLAG_A:
+#   print("flag A is set")   # true
+# if myflags & FLAG_C:
+#   print("flag B is set")   # false
+
+# adding a flag:
+# myflags |= FLAG_B    # FLAG_B is now set
+
+# removing a flag: 
+# myflags &= ~FLAG_C    # FLAG_A and FLAG_B remain
 
 
 
