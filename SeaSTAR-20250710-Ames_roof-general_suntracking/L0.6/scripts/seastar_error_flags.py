@@ -40,7 +40,8 @@ POLARIZER_PLATE_TEMP_OOB = 1024
 AD_TEMP_OOB = 2048
 HAMB_TEMP_OOB  = 4096
 HUMIDITY_HIGH = 8192
-DTDT_ERROR = 16384   # dtemp/dtime - indicates heater is on which affects the radiometers
+DTDT_ERROR1 = 16384   # dtemp/dtime - indicates heater is on which affects the radiometers
+DTDT_ERROR2 = 32768  #  
 
 
 # radiometer_1x_error flags
