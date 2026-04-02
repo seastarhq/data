@@ -56,6 +56,9 @@ print(metadata)
 #print(type(metadata))
 L06_data = L06_data['array_data']
 
+slopes_dtype_dict = { "datetime": "datetime64[ms]", "temp0": "f8", "temp1": "f8", "temp2": "f8", "slope": "f8"}
+slopes_dtype = np.dtype(list(zip(slopes_dtype_dict.keys(),slopes_dtype_dict.values())))
+tempslope_data = np.zeros(len(L06_data), dtype=slopes_dtype)
 
 # for testing, we set all the housekeeping flags back to zero
 #L06_data[:]['housekeeping_flags'] = 0
@@ -65,33 +68,45 @@ L06_data = L06_data['array_data']
 last_timestep = len(L06_data)
 for timestep in range(len(L06_data)):
 
-    if timestep < TEMP_TRIPLET_TIME: # we have not advanced enough timesteps 
+    if timestep < TEMP_TRIPLET_TIME: # we have not advanced enough timesteps
+        #  don't do anythign to tempslope_data - it's all zeros
         L06_data[timestep]['housekeeping_flags'] |= DTDT_ERROR1
-        continue
+        this_time = L06_data[timestep]['datetime']
+        tempslope_data[timestep] = (this_time, 0, 0, 0, 0)
     elif timestep + TEMP_TRIPLET_TIME >= last_timestep: # we are less than triplet_time from the end
+        #  don't do anythign to tempslope_data - it's all zeros
         L06_data[timestep]['housekeeping_flags'] |= DTDT_ERROR1 
-        continue
+        tempslope_data[timestep] = (this_time, 0, 0, 0, 0)
     else:  # we can go forward and back by triplet_time
         triplet_forward_time = int(timestep + TEMP_TRIPLET_TIME)
         triplet_backward_time = int(timestep - TEMP_TRIPLET_TIME)
         #sys.stderr.write(f"{triplet_forward_time} {triplet_backward_time}\n")
         hotblock1_triplet = (L06_data[triplet_backward_time]['hot_block1_temp'], L06_data[timestep]['hot_block1_temp'], L06_data[triplet_forward_time]['hot_block1_temp'])
 
+        this_time = L06_data[timestep]['datetime']
+        temp_slope = (hotblock1_triplet[2] - hotblock1_triplet[0]) / 2.0 * TEMP_TRIPLET_TIME
+        tempslope_data[timestep] = (this_time, hotblock1_triplet[0], hotblock1_triplet[1], hotblock1_triplet[2], temp_slope)
+
         # 4 scenarios: positive slope, negative slope, crest, valley
-        if hotblock1_triplet[0] <= hotblock1_triplet[1] <= hotblock1_triplet[2]:  #positive slope, heater is on, data is invalid
-        #    sys.stderr.write("positive slope\n")
-            temp_slope = (hotblock1_triplet[2] - hotblock1_triplet[0]) / TEMP_TRIPLET_TIME
+        if temp_slope > 0:  #positive slope, heater is on, data is invalid
+
             if temp_slope > TEMP_TRIPLET_TOLERANCE: 
                 sys.stderr.write(f"{hotblock1_triplet[2]} {hotblock1_triplet[0]} {TEMP_TRIPLET_TIME} {temp_slope}\n")
                 L06_data[timestep]['housekeeping_flags'] |= DTDT_ERROR1
-        elif hotblock1_triplet[0] >= hotblock1_triplet[1] >= hotblock1_triplet[2]: # negative slope, heater is off, data is valid
-        #    sys.stderr.write("negative slope\n")
+
+        elif temp_slope < 0: # negative slope, heater is off, data is valid
             continue
-        elif hotblock1_triplet[1] >= hotblock1_triplet[0] and hotblock1_triplet[1] >= hotblock1_triplet[2]: # valley, heater is turning on, data is invalid
-            sys.stderr.write("valley\n")
-            L06_data[timestep]['housekeeping_flags'] |= DTDT_ERROR2
-        elif hotblock1_triplet[1] <= hotblock1_triplet[0] and hotblock1_triplet[1] <= hotblock1_triplet[2]: # crest, heater is turning off, data is valid
-        #    sys.stderr.write("crest\n")
+
+        elif temp_slope == 0: # data is valid
+            continue
+
+        #elif (hotblock1_triplet[1] > hotblock1_triplet[0] and hotblock1_triplet[1] > hotblock1_triplet[2]): # valley, heater is turning on, data is invalid
+        #    L06_data[timestep]['housekeeping_flags'] |= DTDT_ERROR2
+
+        #elif (hotblock1_triplet[1] < hotblock1_triplet[0] and hotblock1_triplet[1] < hotblock1_triplet[2]): # crest, heater is turning off, data is valid
+        #    continue
+        else:
+            # this should never happen
             continue
 
         
@@ -106,10 +121,5 @@ except FileNotFoundError:
         np.savez(arrayfile, array_data=L06_data, metadata = metadata)
 
 
-
-
-    
-
-
-
-
+with open("tempslope_data.npy", 'bw') as tempsfile:
+    np.savez(tempsfile, array_data=tempslope_data)
