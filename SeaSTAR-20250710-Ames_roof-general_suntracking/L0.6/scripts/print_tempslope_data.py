@@ -21,6 +21,11 @@ args = parser.parse_args()
 temp_slope_data = np.load(args.file, allow_pickle=True)
 temp_slope_data = temp_slope_data['array_data']
 
+#if temp_slope_data.shape[1] > 0:
+#    for timestep in range(len(temp_slope_data)):
+#        sys.stdout.write(f"{temp_slope_data[timestep]['datetime']} {temp_slope_data[timestep]['temp0']} {temp_slope_data[timestep]['temp1']} {temp_slope_data[timestep]['temp2']} {temp_slope_data[timestep]['slope']}\n")
+#
+#else:
 for timestep in range(len(temp_slope_data)):
-    sys.stdout.write(f"{temp_slope_data[timestep]['datetime']} {temp_slope_data[timestep]['temp0']} {temp_slope_data[timestep]['temp1']} {temp_slope_data[timestep]['temp2']} {temp_slope_data[timestep]['slope']}\n")
+    sys.stdout.write(f"{temp_slope_data[timestep]['datetime']} {temp_slope_data[timestep]['slope']}\n")
 

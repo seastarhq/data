@@ -76,7 +76,7 @@ OUTFILE=quicklooks_$NUMBER_$DATE.ps
 #psbasemap -J$PROJECTION -R$REGION -Bpx2m -Bpy0.5 -By+l"Longitude" -BwEsn -K -O >> $OUTFILE
 #cat $DATAFILE | awk '{print $1, $11}' | psxy -J$PROJECTION -R$REGION -Sc0.05c -G$ORANGE  -O -K >> $OUTFILE
 
-# plot imu temp & pressure, hot_block1_temp
+# plot imutemp & pressure, hot_block1_temp
 DATAFILE=$EXTRACTED_DATA_DIR/$FILEPREFIX-temperatures.txt
 echo $DATAFILE
 REGION=`$SCRIPTS_DIR/get_timeseries_region.py $DATAFILE`/35/60
@@ -84,14 +84,29 @@ REGION=`$SCRIPTS_DIR/get_timeseries_region.py $DATAFILE`/35/60
 echo plotting basemap   
 #psbasemap -J$PROJECTION -R$REGION -Bpx2m -Bpy10 -By+l"IMU/B1 Temp" -BWesn -K -O -Y-3.5c >> $OUTFILE
 psbasemap -J$PROJECTION -R$REGION -Bpx5m -Bpy10 -By+l"IMU/B1 Temp" -BWesn -K > $OUTFILE
-echo plotting temp1
-cat $DATAFILE | awk '{print $1, $2}' | psxy -J$PROJECTION -R$REGION -Sc0.05c -G$CYAN -O -K >> $OUTFILE
+#echo plotting temp1
+#cat $DATAFILE | awk '{print $1, $2}' | psxy -J$PROJECTION -R$REGION -Sc0.05c -G$CYAN -O -K >> $OUTFILE
 echo plotting temp2
 cat $DATAFILE | awk '{print $1, $3}' | psxy -J$PROJECTION -R$REGION -Sc0.05c -G$BLUEGREEN -O -K >> $OUTFILE
 echo plotting flags
 cat $DATAFILE | awk '{print $1, $4*3.0 + 40.0}' | psxy -J$PROJECTION -R$REGION -Sc0.05c -G$GREY -O -K >> $OUTFILE
 echo plotting dtdterror
 cat $DATAFILE | awk '{ if ($4 > 1000 && $4 < 30000) print $1, 50}' | psxy -J$PROJECTION -R$REGION -Sc0.05c -G$VERMILLION -O -K >> $OUTFILE
+
+
+REGION=`$SCRIPTS_DIR/get_timeseries_region.py $DATAFILE`/-1/1
+DATAFILE=$EXTRACTED_DATA_DIR/tempslope_nosmooth.txt
+psbasemap -J$PROJECTION -R$REGION -Bpx5m -Bpy0.5 -By+l"dTdt" -BWesn -K -O -Y5 >> $OUTFILE
+echo plotting tempslope
+cat $DATAFILE | awk '{print $1, $2}' | psxy -J$PROJECTION -R$REGION -Sc0.05c -G$CYAN -O -K >> $OUTFILE
+DATAFILE=$EXTRACTED_DATA_DIR/tempslope_smooth-5.txt
+cat $DATAFILE | awk '{print $1, $2}' | psxy -J$PROJECTION -R$REGION -Sc0.05c -G$VERMILLION -O -K >> $OUTFILE
+DATAFILE=$EXTRACTED_DATA_DIR/tempslope_smooth-10.txt
+cat $DATAFILE | awk '{print $1, $2}' | psxy -J$PROJECTION -R$REGION -Sc0.05c -G$BLUEGREEN -O -K >> $OUTFILE
+DATAFILE=$EXTRACTED_DATA_DIR/tempslope_smooth-20.txt
+cat $DATAFILE | awk '{print $1, $2}' | psxy -J$PROJECTION -R$REGION -Sc0.05c -G$GREY -O -K >> $OUTFILE
+
+
 #REGION=`$SCRIPTS_DIR/get_timeseries_region.py $DATAFILE`/1000/1100
 #psbasemap -J$PROJECTION -R$REGION -Bpx2m -Bpy50 -By+l"IMU Press" -BwEsn -K -O >> $OUTFILE
 #cat $DATAFILE | awk '{print $1, $9/100}' | psxy -J$PROJECTION -R$REGION -Sc0.05c -G$VERMILLION -O -K >> $OUTFILE
