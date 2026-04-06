@@ -21,7 +21,10 @@ from seastar_filepaths import *
 # HOT_BLOCK1_MIN HOT_BLOCK1_MAX HOT_BLOCK2_MIN HOT_BLOCK2_MAX COLD_BLOCK_MIN COLD_BLOCK_MAX
 # IMU_TEMP_MIN IMU_TEMP_MAX IMU_PRESS_MIN IMU_PRESS_MAX
 # TRIPLETVAR_TOLERANCE_PERCENT TRIPLETVAR_TIME
-#from seastar_analysis_params import *
+from seastar_error_flags import * 
+
+hotblock_error = 0
+dtdt_error = 0
 
 parser = argparse.ArgumentParser()
 parser.add_argument('file')
@@ -45,10 +48,22 @@ for timestep in range(len(L06_data)):
     timestamp = L06_data[timestep]['datetime'].astype(datetime)
     imu_temp = L06_data[timestep]['imu_temp']
     hot_block1_temp = L06_data[timestep]['hot_block1_temp']
+    dTdt_raw = L06_data[timestep]['dTdt_raw']
+    dTdt_smooth = L06_data[timestep]['dTdt_smooth']
+    d2Tdt2 = L06_data[timestep]['d2Tdt2']
+    d2Tdt2_smooth = L06_data[timestep]['d2Tdt2_smooth']
+
     housekeeping_flags = L06_data[timestep]['housekeeping_flags']
+    if housekeeping_flags & HOT_BLOCK_1_HOT or housekeeping_flags & HOT_BLOCK_1_COLD:
+        hotblock_error = 1
+    if housekeeping_flags & DTDT_ERROR1:
+        dtdt_error = 1
+
+        
+        
 
 
-    sys.stdout.write(f"{timestamp.isoformat()} {imu_temp} {hot_block1_temp} {housekeeping_flags}\n")
+    sys.stdout.write(f"{timestamp.isoformat()} {imu_temp} {hot_block1_temp} {dTdt_raw} {dTdt_smooth} {d2Tdt2} {d2Tdt2_smooth} {housekeeping_flags} {hotblock_error} {dtdt_error}\n")
 
 
 

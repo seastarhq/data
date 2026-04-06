@@ -26,4 +26,7 @@ TRIPLET_TOLERANCE = float(os.environ['TRIPLETVAR_TOLERANCE_PERCENT'])  # in perc
 TRIPLET_TIME = float(os.environ['TRIPLETVAR_TIME'])  # in timesteps + and - (timesteps are currently seconds)
 
 TEMP_TRIPLET_TIME = float(os.environ['TEMP_TRIPLET_TIME'])
-TEMP_TRIPLET_TOLERANCE = float(os.environ['TEMP_TRIPLET_TOLERANCE'])
+TEMP_SLOPE_TOLERANCE = float(os.environ['TEMP_SLOPE_TOLERANCE'])
+WINDOWWIDTH = int(os.environ['WINDOWWIDTH'])
+TEMP_D2TDT2_TOLERANCE = float(os.environ['TEMP_D2TDT2_TOLERANCE'])
+

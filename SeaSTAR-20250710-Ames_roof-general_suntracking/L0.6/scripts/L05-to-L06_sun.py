@@ -27,13 +27,12 @@ from seastar_analysis_params import *
 parser = argparse.ArgumentParser()
 parser.add_argument('file')
 parser.add_argument('-o', '--outputfile')
-parser.add_argument('--triplet_tol', type=float)
 args = parser.parse_args()
 
 # get analysis parameters from command line arguments, by overriding what's read in in the import above
 # or default to values set in environment variables
-if args.triplet_tol is not None:
-    TRIPLET_TOLERANCE = args.triplet_tol
+  # none
+
 
 # findFile needs a list passed to it, so we make one with `cwd` added 
 L05_data_dir = [L05_DATA_DIR, './']

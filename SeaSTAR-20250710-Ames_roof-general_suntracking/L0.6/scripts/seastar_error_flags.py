@@ -178,7 +178,7 @@ def calculate_housekeeping_flags(avginterval,paramsdict):
 
 
 
-# quick flag tutorial
+# quick flag tutorial, for those with too much on their mind!
 
 # setting and combining flags:
 # myflags = FLAG_A | FLAG_B  

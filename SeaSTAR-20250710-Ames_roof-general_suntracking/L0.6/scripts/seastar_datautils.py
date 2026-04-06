@@ -137,7 +137,12 @@ L06_sun_dtype_dict = { "datetime": 'datetime64[ms]',   # the [ms] is important f
                   "radiometer_1x_flags": 'i4',
                   "radiometer_100x_flags": 'i4',
                   "radiometer_10kx_flags": 'i4',
-                  "cloud_flags": 'i4'}
+                  "cloud_flags": 'i4',
+                  "dTdt_raw": 'f8',
+                  "dTdt_smooth": 'f8',
+                  "d2Tdt2": "f8",
+                  "d2Tdt2_smooth": "f8"}
+                    
 L06_sun_dtype = np.dtype(list(zip(L06_sun_dtype_dict.keys(),L06_sun_dtype_dict.values())))
 
 
