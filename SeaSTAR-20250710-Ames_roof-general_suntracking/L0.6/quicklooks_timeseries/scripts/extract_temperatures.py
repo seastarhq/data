@@ -23,8 +23,9 @@ from seastar_filepaths import *
 # TRIPLETVAR_TOLERANCE_PERCENT TRIPLETVAR_TIME
 from seastar_error_flags import * 
 
-hotblock_error = 0
-dtdt_error = 0
+#hotblock_error = 0
+#dtdt_error = 0
+
 
 parser = argparse.ArgumentParser()
 parser.add_argument('file')
@@ -44,6 +45,12 @@ L06_data = L06_data['array_data']
 seastar_timezone = pytz.timezone(metadata['SEASTAR_TIMEZONE'])
 
 for timestep in range(len(L06_data)):
+    # these are the scenarios from the if-elif block
+    scenario1 = 0  # we set the COLD_BLOCK_HOT flag 
+    scenario2 = 0  # COLD_BLOCK_COLD 
+    scenario3 = 0  # IMU_TEMP_OOB
+    scenario4 = 0  # IMU_PRES_OOB
+    scenario5 = 0
 
     timestamp = L06_data[timestep]['datetime'].astype(datetime)
     imu_temp = L06_data[timestep]['imu_temp']
@@ -54,17 +61,18 @@ for timestep in range(len(L06_data)):
     d2Tdt2_smooth = L06_data[timestep]['d2Tdt2_smooth']
 
     housekeeping_flags = L06_data[timestep]['housekeeping_flags']
-    if housekeeping_flags & HOT_BLOCK_1_HOT or housekeeping_flags & HOT_BLOCK_1_COLD:
-        hotblock_error = 1
-    if housekeeping_flags & DTDT_ERROR1:
-        dtdt_error = 1
+    if housekeeping_flags & COLD_BLOCK_HOT: 
+        scenario1 = 1 
+    elif housekeeping_flags & COLD_BLOCK_COLD: 
+        scenario2 = 1
+    elif housekeeping_flags & IMU_TEMP_OOB:
+        scenario3 = 1
+    elif housekeeping_flags & IMU_PRES_OOB:
+        scenario4 = 1
+    elif housekeeping_flags & WATER_TEMP_OOB:
+        scenario5 = 1
 
-        
-        
 
-
-    sys.stdout.write(f"{timestamp.isoformat()} {imu_temp} {hot_block1_temp} {dTdt_raw} {dTdt_smooth} {d2Tdt2} {d2Tdt2_smooth} {housekeeping_flags} {hotblock_error} {dtdt_error}\n")
-
-
+    sys.stdout.write(f"{timestamp.isoformat()} {imu_temp} {hot_block1_temp} {dTdt_raw} {dTdt_smooth} {d2Tdt2} {d2Tdt2_smooth} {housekeeping_flags} {scenario1} {scenario2} {scenario3} {scenario4} {scenario5}\n")
 
 

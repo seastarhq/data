@@ -28,10 +28,9 @@ TRIPLETVAR_TOLERANCE_PERCENT=2
 TRIPLETVAR_TIME=10
 
 TEMP_TRIPLET_TIME=10
-TEMP_SLOPE_TOLERANCE=0.05  # slope of degrees C per timestep
-WINDOWWIDTH=20   # moving average window width for 
-TEMP_D2TDT2_TOLERANCE=0.5  # second derivate of degrees C per timestep
-
+TEMP_SLOPE_TOLERANCE=0.003  # slope of degrees C per timestep
+WINDOWWIDTH=10   # moving average window width for 
+TEMP_D2TDT2_TOLERANCE=0.2  # second derivate of degrees C per timestep
 
 
 export SEASTAR_TIMEZONE
@@ -50,4 +49,3 @@ export TEMP_TRIPLET_TIME
 export TEMP_SLOPE_TOLERANCE
 export WINDOWWIDTH
 export TEMP_D2TDT2_TOLERANCE
-

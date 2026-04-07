@@ -24,8 +24,6 @@ from seastar_filepaths import *
 # TRIPLETVAR_TOLERANCE_PERCENT
 from seastar_analysis_params import *
 
-seastar_timezone = pytz.timezone(SEASTAR_TIMEZONE) # we only get this from the parameters file, not cli 
-
 parser = argparse.ArgumentParser()
 parser.add_argument('file')
 parser.add_argument('--triplet_tol', type=float)
@@ -50,7 +48,7 @@ L06_file_time = os.path.splitext(os.path.basename(L06_npyfile))[0].split("_")[2]
 
 L06_data = np.load(L06_npyfile, allow_pickle=True)
 metadata = L06_data['metadata'][()]
-print(metadata)
+#print(metadata)
 #print(type(metadata))
 L06_data = L06_data['array_data']
 
@@ -89,8 +87,8 @@ for timestep in range(len(L06_data)):
 now = datetime.now(pytz.utc).isoformat()
 triplet_metadata = {'TRIPLETVAR_TOLERANCE_PERCENT': TRIPLET_TOLERANCE, 'TRIPLETVAR_TIME': TRIPLET_TIME, 'LAST_PROCESSING_TIME': now}
 metadata.update(triplet_metadata)
-print(metadata)
-print(L06_npyfile)
+#print(metadata)
+#print(L06_npyfile)
 
 
 try:

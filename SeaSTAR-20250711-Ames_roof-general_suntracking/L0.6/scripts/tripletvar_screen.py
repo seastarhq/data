@@ -5,6 +5,7 @@ import numpy as np
 import math
 import argparse
 import pytz
+import datetime
 
 # custom seastar modules
 import seastar_datautils
@@ -22,8 +23,6 @@ from seastar_filepaths import *
 # IMU_TEMP_MIN IMU_TEMP_MAX IMU_PRESS_MIN IMU_PRESS_MAX
 # TRIPLETVAR_TOLERANCE_PERCENT
 from seastar_analysis_params import *
-
-seastar_timezone = pytz.timezone(SEASTAR_TIMEZONE) # we only get this from the parameters file, not cli 
 
 parser = argparse.ArgumentParser()
 parser.add_argument('file')
@@ -49,7 +48,7 @@ L06_file_time = os.path.splitext(os.path.basename(L06_npyfile))[0].split("_")[2]
 
 L06_data = np.load(L06_npyfile, allow_pickle=True)
 metadata = L06_data['metadata'][()]
-print(metadata)
+#print(metadata)
 #print(type(metadata))
 L06_data = L06_data['array_data']
 
@@ -85,11 +84,17 @@ for timestep in range(len(L06_data)):
         if abs(ch5_triplet[1] - ch5_triplet[0] / ch5_triplet[1]) > TRIPLET_TOLERANCE*100.0 or abs(ch5_triplet[1] - ch5_triplet[2] / ch5_triplet[1]) > TRIPLET_TOLERANCE*100.0:
             L06_data[timestamp]['cloud_flags'] = 2
 
-triplet_metadata = {'TRIPLETVAR_TOLERANCE_PERCENT': TRIPLET_TOLERANCE, 'TRIPLETVAR_TIME': TRIPLET_TIME}
+now = datetime.now(pytz.utc).isoformat()
+triplet_metadata = {'TRIPLETVAR_TOLERANCE_PERCENT': TRIPLET_TOLERANCE, 'TRIPLETVAR_TIME': TRIPLET_TIME, 'LAST_PROCESSING_TIME': now}
 metadata.update(triplet_metadata)
 
 
-np.savez(L06_npyfile, array_data=L06_data, metadata = metadata)
+try:
+    with open(L06_npyfile, 'bw') as arrayfile:
+        np.savez(arrayfile, array_data=L06_data, metadata = metadata)
+except FileNotFoundError:
+    with open('recoveryfilename.L06', 'bw') as arrayfile:
+        np.savez(arrayfile, array_data=L06_data, metadata = metadata)
 
 
 

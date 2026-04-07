@@ -79,35 +79,45 @@ OUTFILE=quicklooks_$NUMBER_$DATE.ps
 # plot imutemp & pressure, hot_block1_temp
 DATAFILE=$EXTRACTED_DATA_DIR/$FILEPREFIX-temperatures.txt
 echo $DATAFILE
-REGION=`$SCRIPTS_DIR/get_timeseries_region.py $DATAFILE`/35/60
+REGION=`$SCRIPTS_DIR/get_timeseries_region.py $DATAFILE`/35/45
 #psbasemap -J$PROJECTION -R$REGION -Bpx2m -Bpy10 -By+l"IMU/B1 Temp" -BWesn -K -O -Y-3.5c >> $OUTFILE
 echo plotting basemap   
 #psbasemap -J$PROJECTION -R$REGION -Bpx2m -Bpy10 -By+l"IMU/B1 Temp" -BWesn -K -O -Y-3.5c >> $OUTFILE
-psbasemap -J$PROJECTION -R$REGION -Bpx5m -Bpy10 -By+l"IMU/B1 Temp" -BWesn -K > $OUTFILE
+psbasemap -J$PROJECTION -R$REGION -Bpx5m -Bpy10 -By+l"Temp" -BWesn -K > $OUTFILE
 #echo plotting temp1
 #cat $DATAFILE | awk '{print $1, $2}' | psxy -J$PROJECTION -R$REGION -Sc0.05c -G$CYAN -O -K >> $OUTFILE
 echo plotting hotblock temp
 cat $DATAFILE | awk '{print $1, $3}' | psxy -J$PROJECTION -R$REGION -Sc0.05c -G$BLUEGREEN -O -K >> $OUTFILE
-echo plotting flags
-cat $DATAFILE | awk '{print $1, $9 * 50.0}' | psxy -J$PROJECTION -R$REGION -Sc0.05c -G$GREY -O -K >> $OUTFILE
-echo plotting dtdterror
-cat $DATAFILE | awk '{print $1, $10 * 50.0}' | psxy -J$PROJECTION -R$REGION -Sc0.05c -G$GREY -O -K >> $OUTFILE
 
-REGION=`$SCRIPTS_DIR/get_timeseries_region.py $DATAFILE`/-1/1
-psbasemap -J$PROJECTION -R$REGION -Bpx5m -Bpy0.5 -By+l"dTdt" -BWesn -K -O -Y5 >> $OUTFILE
+REGION=`$SCRIPTS_DIR/get_timeseries_region.py $DATAFILE`/-1/2.5
+psbasemap -J$PROJECTION -R$REGION -Bpx5m -Bpy0.5 -By+l"dT/dt" -BWesn -K -O -Y4 >> $OUTFILE
 echo plotting tempslope
 cat $DATAFILE | awk '{print $1, $4}' | psxy -J$PROJECTION -R$REGION -Sc0.05c -G$CYAN -O -K >> $OUTFILE
-cat $DATAFILE | awk '{print $1, $2}' | psxy -J$PROJECTION -R$REGION -Sc0.05c -G$GREY -O -K >> $OUTFILE
+#cat $DATAFILE | awk '{print $1, $2}' | psxy -J$PROJECTION -R$REGION -Sc0.05c -G$GREY -O -K >> $OUTFILE
 
-psbasemap -J$PROJECTION -R$REGION -Bpx5m -Bpy0.5 -By+l"dTdt" -BWesn -K -O -Y5 >> $OUTFILE
+#psbasemap -J$PROJECTION -R$REGION -Bpx5m -Bpy0.5 -By+l"dTdt" -BWesn -K -O -Y5 >> $OUTFILE
 echo plotting tempslope smooth
-cat $DATAFILE | awk '{print $1, $5}' | psxy -J$PROJECTION -R$REGION -Sc0.05c -G$CYAN -O -K >> $OUTFILE
+cat $DATAFILE | awk '{print $1, $5}' | psxy -J$PROJECTION -R$REGION -Sc0.05c -G$VERMILLION -O -K >> $OUTFILE
 
 REGION=`$SCRIPTS_DIR/get_timeseries_region.py $DATAFILE`/-3/3
-psbasemap -J$PROJECTION -R$REGION -Bpx5m -Bpy1 -By+l"dTdt" -BWesn -K -O -Y5 >> $OUTFILE
+psbasemap -J$PROJECTION -R$REGION -Bpx5m -Bpy1 -By+l"d2T/dt2" -BWesn -K -O -Y4 >> $OUTFILE
 echo plotting d2Tdt2
 cat $DATAFILE | awk '{print $1, $6}' | psxy -J$PROJECTION -R$REGION -Sc0.05c -G$CYAN -O -K >> $OUTFILE
 cat $DATAFILE | awk '{print $1, $7}' | psxy -J$PROJECTION -R$REGION -Sc0.05c -G$VERMILLION -O -K >> $OUTFILE
+
+
+REGION=`$SCRIPTS_DIR/get_timeseries_region.py $DATAFILE`/0/6
+psbasemap -J$PROJECTION -R$REGION -Bpx5m -Bpy1 -By+l"d2T/dt2" -BWesn -K -O -Y4 >> $OUTFILE
+echo plotting scenario1 - data is good
+cat $DATAFILE | awk '{print $1, $9 * 1.0}' | psxy -J$PROJECTION -R$REGION -Sc0.05c -G$CYAN -O -K >> $OUTFILE
+echo plotting scenario2
+cat $DATAFILE | awk '{print $1, $10 * 2.0}' | psxy -J$PROJECTION -R$REGION -Sc0.05c -G$VERMILLION -O -K >> $OUTFILE
+echo plotting scenario3
+cat $DATAFILE | awk '{print $1, $11 * 3.0}' | psxy -J$PROJECTION -R$REGION -Sc0.05c -G$CYAN -O -K >> $OUTFILE
+echo plotting scenario4
+cat $DATAFILE | awk '{print $1, $12 * 4.0}' | psxy -J$PROJECTION -R$REGION -Sc0.05c -G$VERMILLION -O -K >> $OUTFILE
+echo plotting scenario5
+cat $DATAFILE | awk '{print $1, $13 * 5.0}' | psxy -J$PROJECTION -R$REGION -Sc0.05c -G$GREY -O -K >> $OUTFILE
 #REGION=`$SCRIPTS_DIR/get_timeseries_region.py $DATAFILE`/1000/1100
 #psbasemap -J$PROJECTION -R$REGION -Bpx2m -Bpy50 -By+l"IMU Press" -BwEsn -K -O >> $OUTFILE
 #cat $DATAFILE | awk '{print $1, $9/100}' | psxy -J$PROJECTION -R$REGION -Sc0.05c -G$VERMILLION -O -K >> $OUTFILE

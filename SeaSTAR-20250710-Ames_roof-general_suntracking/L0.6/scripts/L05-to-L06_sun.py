@@ -29,11 +29,6 @@ parser.add_argument('file')
 parser.add_argument('-o', '--outputfile')
 args = parser.parse_args()
 
-# get analysis parameters from command line arguments, by overriding what's read in in the import above
-# or default to values set in environment variables
-  # none
-
-
 # findFile needs a list passed to it, so we make one with `cwd` added 
 L05_data_dir = [L05_DATA_DIR, './']
 L05_npyfile = seastar_datautils.findFile(args.file, L05_data_dir)
@@ -49,8 +44,6 @@ except:
 L05_data = np.load(L05_npyfile, allow_pickle=True)
 metadata = L05_data['metadata'][()]
 L05_data = L05_data['array_data']
-
-seastar_timezone = pytz.timezone(metadata['SEASTAR_TIMEZONE']) 
 
 #print(L05_data.shape)
 

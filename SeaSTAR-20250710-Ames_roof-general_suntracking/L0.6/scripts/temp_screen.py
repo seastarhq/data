@@ -24,8 +24,6 @@ from seastar_filepaths import *
 # TRIPLETVAR_TOLERANCE_PERCENT TEMP_TRIPLET_TIME TEMP_SLOPE_TOLERANCE WINDOWWIDTH
 from seastar_analysis_params import *
 
-seastar_timezone = pytz.timezone(SEASTAR_TIMEZONE) # we only get this from the parameters file, not cli 
-
 parser = argparse.ArgumentParser()
 parser.add_argument('file')
 parser.add_argument('--temp_triplet_time', type=float)
@@ -139,17 +137,24 @@ for timestep in range(len(L06_data)):
 
     if L06_data[timestep]['dTdt_smooth'] <= 0 and L06_data[timestep]['dTdt_smooth'] < 0:
         # data is good, leave the flag at 0
-        pass
+        # data is good, borrow an unused flag for testing
+        L06_data[timestep]['housekeeping_flags'] |= COLD_BLOCK_HOT
     elif L06_data[timestep]['dTdt_smooth'] <= 0 and L06_data[timestep]['d2Tdt2_smooth'] > TEMP_D2TDT2_TOLERANCE:
-        L06_data[timestep]['housekeeping_flags'] |= DTDT_ERROR1
-    elif L06_data[timestep]['dTdt_smooth'] <= TEMP_SLOPE_TOLERANCE and abs(L06_data[timestep]['dTdt_smooth']) < TEMP_D2TDT2_TOLERANCE:
+        # we borrow an unused flag for testing
+        L06_data[timestep]['housekeeping_flags'] |= COLD_BLOCK_COLD
+        #L06_data[timestep]['housekeeping_flags'] |= DTDT_ERROR1
+    elif L06_data[timestep]['dTdt_smooth'] <= TEMP_SLOPE_TOLERANCE and abs(L06_data[timestep]['d2Tdt2_smooth']) < TEMP_D2TDT2_TOLERANCE:
         # data is good
+        # borrow an unused flag for testing
+        L06_data[timestep]['housekeeping_flags'] |= IMU_TEMP_OOB
         pass
-    elif L06_data[timestep]['dTdt_smooth'] >= 0 and abs(L06_data[timestep]['dTdt_smooth']) > TEMP_D2TDT2_TOLERANCE:
+    elif L06_data[timestep]['dTdt_smooth'] >= 0 and abs(L06_data[timestep]['d2Tdt2_smooth']) > TEMP_D2TDT2_TOLERANCE:
         # data is bad
-        L06_data[timestep]['housekeeping_flags'] |= DTDT_ERROR1
+        # borrow an unused flag for testing
+        L06_data[timestep]['housekeeping_flags'] |= IMU_PRES_OOB
+        #L06_data[timestep]['housekeeping_flags'] |= DTDT_ERROR1
     else:
-        pass
+        L06_data[timestep]['housekeeping_flags'] |= WATER_TEMP_OOB
         
 triplet_metadata = {'TEMP_TRIPLET_TIME': TEMP_TRIPLET_TIME, 'TEMP_SLOPE_TOLERANCE': TEMP_SLOPE_TOLERANCE, 'WINDOWWIDTH': WINDOWWIDTH, 'TEMP_D2TDT2_TOLERANCE': TEMP_D2TDT2_TOLERANCE }
 metadata.update(triplet_metadata)
