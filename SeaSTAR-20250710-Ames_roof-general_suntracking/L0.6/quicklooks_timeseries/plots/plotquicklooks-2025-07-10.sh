@@ -107,7 +107,7 @@ cat $DATAFILE | awk '{print $1, $7}' | psxy -J$PROJECTION -R$REGION -Sc0.05c -G$
 
 
 REGION=`$SCRIPTS_DIR/get_timeseries_region.py $DATAFILE`/0/6
-psbasemap -J$PROJECTION -R$REGION -Bpx5m -Bpy1 -By+l"d2T/dt2" -BWesn -K -O -Y4 >> $OUTFILE
+psbasemap -J$PROJECTION -R$REGION -Bpx5m -Bpy1 -By+l"Q Flags" -BWesn -K -O -Y4 >> $OUTFILE
 echo plotting scenario1 - data is good
 cat $DATAFILE | awk '{print $1, $9 * 1.0}' | psxy -J$PROJECTION -R$REGION -Sc0.05c -G$CYAN -O -K >> $OUTFILE
 echo plotting scenario2
@@ -153,8 +153,8 @@ cat $DATAFILE | awk '{print $1, $13 * 5.0}' | psxy -J$PROJECTION -R$REGION -Sc0.
 # close the plot
 # and convert formats
 psxy -J$PROJECTION -R$REGION -T -O >> $OUTFILE
-#psconvert $OUTFILE -A -Tf
-#psconvert $OUTFILE -A -Tg
+psconvert $OUTFILE -A -Tf
+psconvert $OUTFILE -A -Tg
 
 OUTFILEARRAY+=($OUTFILE)
 

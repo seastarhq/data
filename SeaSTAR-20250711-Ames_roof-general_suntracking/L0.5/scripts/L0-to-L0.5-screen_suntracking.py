@@ -29,6 +29,7 @@ seastar_timezone = pytz.timezone(SEASTAR_TIMEZONE) # we only get this from the p
 
 parser = argparse.ArgumentParser()
 parser.add_argument('file')
+parser.add_argument('-o', '--outfile')
 parser.add_argument('-i', '--interval', type=float)
 parser.add_argument('-m', '--margin', type=float)
 parser.add_argument('--trackerror', type=float)
@@ -58,6 +59,11 @@ raw_data_dirs = [RAW_DATA_DIR,]
 seastar_logfile = seastar_datautils.findFile(args.file,raw_data_dirs)
 
 logfile_date = os.path.basename(seastar_logfile).split("_")
+# set the output filename either from the command line, or based on the dates in the input file
+if args.outfile is not None:
+    L05_filename = PICKLE_DIR + '/' + args.outfile
+else:
+    L05_filename = PICKLE_DIR + '/' + 'SeaSTAR-L05_' + logfile_date[0] + "_" + logfile_date[1] + ".L05"
 
 sys.stderr.write(f"seastar logfile date: {logfile_date[0]}\n")
 sys.stderr.write(f"averaging interval: {avg_interval}\n")
@@ -101,7 +107,6 @@ sys.stderr.write(f"seastar logfile start time: {starttime}\n")
 time_final = df['datetime'][len(df)-1].round('s')
 sys.stderr.write(f"seastar logfile end time: {time_final}\n")
 
-L05_filename = PICKLE_DIR + '/' + 'SeaSTAR-L05_' + logfile_date[0] + "_" + logfile_date[1]
 
 # we do three passes through the data. These will screen:
 # 1. Bad suntracking, based on euclidian distance
@@ -269,8 +274,12 @@ metadata = {'ROOT_DIR': ROOT_DIR,\
         'IMU_PRESS_MAX': IMU_PRESS_MAX }
 
 
-np.savez(L05_filename, array_data = L05_3d_array, metadata = metadata)
-    
+try:
+    with open(L05_filename, 'bw') as arrayfile:
+        np.savez(arrayfile, array_data = L05_3d_array, metadata = metadata)
+except FileNotFoundError:
+    with open('recoveryfile.L05', 'bw') as arrayfile:
+        np.savez(arrayfile, array_data = L05_3d_array, metadata = metadata)
 
 
 #time0 = time1
