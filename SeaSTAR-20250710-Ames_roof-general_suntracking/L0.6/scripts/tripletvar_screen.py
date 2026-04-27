@@ -54,6 +54,7 @@ L06_data = L06_data['array_data']
 
 #print(L05_data.shape)
 
+
 last_time = len(L06_data)
 for timestep in range(len(L06_data)):
 
@@ -73,15 +74,27 @@ for timestep in range(len(L06_data)):
         ch4_triplet = (L06_data[triplet_backward_time]['ch4_1x'], L06_data[timestep]['ch4_1x'], L06_data[triplet_forward_time]['ch4_1x'])
         ch5_triplet = (L06_data[triplet_backward_time]['ch5_1x'], L06_data[timestep]['ch5_1x'], L06_data[triplet_forward_time]['ch5_1x'])
 
-        if abs(ch1_triplet[1] - ch1_triplet[0] / ch1_triplet[1]) > TRIPLET_TOLERANCE*100.0 or abs(ch1_triplet[1] - ch1_triplet[2] / ch1_triplet[1]) > TRIPLET_TOLERANCE*100.0:
+        tvar_ch1 = calc_tvar(ch1_triplet)
+        tvar_ch2 = calc_tvar(ch2_triplet)
+        tvar_ch3 = calc_tvar(ch3_triplet)
+        tvar_ch4 = calc_tvar(ch4_triplet)
+        tvar_ch5 = calc_tvar(ch5_triplet)
+
+        L06_data[timestep]['tvar_ch1'] = tvar_ch1
+        L06_data[timestep]['tvar_ch2'] = tvar_ch2
+        L06_data[timestep]['tvar_ch3'] = tvar_ch3
+        L06_data[timestep]['tvar_ch4'] = tvar_ch4
+        L06_data[timestep]['tvar_ch5'] = tvar_ch5
+
+        if tvar_ch1 > TRIPLET_TOLERANCE*100.0:
             L06_data[timestamp]['cloud_flags'] = 2
-        if abs(ch2_triplet[1] - ch2_triplet[0] / ch2_triplet[1]) > TRIPLET_TOLERANCE*100.0 or abs(ch2_triplet[1] - ch2_triplet[2] / ch2_triplet[1]) > TRIPLET_TOLERANCE*100.0:
+        if tvar_ch2 > TRIPLET_TOLERANCE*100.0:
             L06_data[timestamp]['cloud_flags'] = 2
-        if abs(ch3_triplet[1] - ch3_triplet[0] / ch3_triplet[1]) > TRIPLET_TOLERANCE*100.0 or abs(ch3_triplet[1] - ch3_triplet[2] / ch3_triplet[1]) > TRIPLET_TOLERANCE*100.0:
+        if tvar_ch3 > TRIPLET_TOLERANCE*100.0:
             L06_data[timestamp]['cloud_flags'] = 2
-        if abs(ch4_triplet[1] - ch4_triplet[0] / ch4_triplet[1]) > TRIPLET_TOLERANCE*100.0 or abs(ch4_triplet[1] - ch4_triplet[2] / ch4_triplet[1]) > TRIPLET_TOLERANCE*100.0:
+        if tvar_ch4 > TRIPLET_TOLERANCE*100.0:
             L06_data[timestamp]['cloud_flags'] = 2
-        if abs(ch5_triplet[1] - ch5_triplet[0] / ch5_triplet[1]) > TRIPLET_TOLERANCE*100.0 or abs(ch5_triplet[1] - ch5_triplet[2] / ch5_triplet[1]) > TRIPLET_TOLERANCE*100.0:
+        if tvar_ch5 > TRIPLET_TOLERANCE*100.0:
             L06_data[timestamp]['cloud_flags'] = 2
 
 now = datetime.now(pytz.utc).isoformat()

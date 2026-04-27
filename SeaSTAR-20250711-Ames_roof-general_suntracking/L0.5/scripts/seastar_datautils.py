@@ -60,11 +60,11 @@ dtype_dict = { "datetime": 'datetime64[ms]',   # the [ms] is important for conve
                   "hot_block1_temp": 'f8',
                   "euclidian_dist": 'f8',
                   "flags": 'i4'}
-L04_dtype = np.dtype(list(zip(dtype_dict.keys(),dtype_dict.values())))
+L05_dtype = np.dtype(list(zip(dtype_dict.keys(),dtype_dict.values())))
 
-def create_L04_3darray(timesteps,maxdatapoints=60):
+def create_L05_3darray(timesteps,maxdatapoints=60):
 # we add the last column for the flags - there will be one set of flags for each timestep, so one more column should be plenty
-    L04array = np.empty( (timesteps, maxdatapoints),dtype=L04_dtype)   
+    L05array = np.empty( (timesteps, maxdatapoints),dtype=L05_dtype)   
 
 # fill up the array with nans, or 0's for the flags
 # we can't do this automatically using np.full in the line above, since the datatype contains floats
@@ -73,28 +73,28 @@ def create_L04_3darray(timesteps,maxdatapoints=60):
         for j in range(maxdatapoints):
             for key in dtype_dict.keys():
                 if key != "flags" and key != 'datetime':
-                    L04array[i][j][key] = np.nan
+                    L05array[i][j][key] = np.nan
                 elif key == 'datetime':
-                    L04array[i][j][key] = np.datetime64('NaT')
+                    L05array[i][j][key] = np.datetime64('NaT')
                 elif key == 'flags':
-                    L04array[i][j][key] = 0
+                    L05array[i][j][key] = 0
 
-    return L04array
+    return L05array
     
-def create_L04_2darray(maxdatapoints=60):
+def create_L05_2darray(maxdatapoints=60):
 #maxdatapoints needs to be the same as the 3-d L04array
-    L04line = np.empty((maxdatapoints),dtype=L04_dtype)
+    L05line = np.empty((maxdatapoints),dtype=L05_dtype)
      
     for j in range(maxdatapoints):
         for key in dtype_dict.keys():
             if key != "flags" and key != 'datetime':
-                L04line[j][key] = np.nan
+                L05line[j][key] = np.nan
             elif key == 'datetime':
-                L04line[j][key] = np.datetime64('NaT')
+                L05line[j][key] = np.datetime64('NaT')
             elif key == 'flags':
-                L04line[j][key] = 0
+                L05line[j][key] = 0
 
-    return L04line
+    return L05line
 
 
 

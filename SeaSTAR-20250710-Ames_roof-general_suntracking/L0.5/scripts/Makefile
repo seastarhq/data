@@ -1,14 +1,15 @@
-SCRIPTS=./L0-to-L04.py ./L04-to-L05.py
+SCRIPTS=./L0-to-L04.py ./L04-jo-L05.py
 MODULES=./seastar_analysis_params.py ./seastar_analysis_utils.py ./seastar_datautils.py ./seastar_error_flags.py ./seastar_filepaths.py
 PARAMSFILES=../setup/environment.sh ../setup/parameters.sh
+vpath %.L06 ../../pickle
+vpath %.csv ../../raw_csv
 
-
-SeaSTAR_2025-07-10_09-23-46.L05: SeaSTAR_2025-07-10_09-23-46.L04 
+SeaSTAR_2025-07-10_09-23-46.L05: SeaSTAR_2025-07-10_09-23-46.L04 $(SCRIPTS) $(MODULES) $(PARAMSFILES)
 	echo processing L04 to L05 $@
 	(source ../setup/environment.sh; source ../setup/parameters.sh; ./L04-to-L05.py $< --outputfile $@)
 	(source ../setup/environment.sh; ln -s $(PICKLE_DIR)/$@)
 
-SeaSTAR_2025-07-10_09-23-46.L04: SeaSTAR_2025-07-10_09-23-46.csv
+SeaSTAR_2025-07-10_09-23-46.L04: SeaSTAR_2025-07-10_09-23-46.csv $(SCRIPTS) $(MODULES) $(PARAMSFILES)
 	echo processing csv to L04 $@
 	(source ../setup/environment.sh; source ../setup/parameters.sh; ./L0-to-L04.py $< --outputfile $@)
 	(source ../setup/environment.sh; ln -s $(PICKLE_DIR)/$@)

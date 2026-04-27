@@ -32,6 +32,9 @@ TEMP_SLOPE_TOLERANCE=0.003  # slope of degrees C per timestep
 WINDOWWIDTH=10   # moving average window width for 
 TEMP_D2TDT2_TOLERANCE=0.2  # second derivate of degrees C per timestep
 
+TEMP_CORR_BASELINE=39.5
+TEMP_CORR_SCALEFACTOR=0.00464
+
 
 export SEASTAR_TIMEZONE
 export AVG_INTERVAL ANALYSIS_MARGIN 
@@ -49,3 +52,5 @@ export TEMP_TRIPLET_TIME
 export TEMP_SLOPE_TOLERANCE
 export WINDOWWIDTH
 export TEMP_D2TDT2_TOLERANCE
+export TEMP_CORR_BASELINE
+export TEMP_CORR_SCALEFACTOR
