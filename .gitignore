@@ -16,6 +16,9 @@ Makefile~
 *.zip
 *.png
 *.csv_raw*
+*.csv-raw*
+error.log
+errorlog.txt
 gmt.history
 gmt.conf
 gmt.conf.old
