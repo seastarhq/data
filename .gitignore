@@ -18,6 +18,7 @@ Makefile~
 *.pkl
 *.csv_raw*
 *.csv-raw*
+*_log.csv
 error.log
 errorlog.txt
 gmt.history

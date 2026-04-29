@@ -2,7 +2,7 @@
 
 # Half-width of the time window used to average L0.6 around each AERONET
 # observation timestamp. Total window = 2 * WINDOW_SECONDS.
-WINDOW_SECONDS=30
+WINDOW_SECONDS=15
 
 # Date range (UTC, ISO 8601). Inclusive START, exclusive END.
 # Leave blank to use the full overlap of available L0.6 + AERONET data.
