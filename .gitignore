@@ -15,6 +15,7 @@ Makefile~
 *.sh~
 *.zip
 *.png
+*.pkl
 *.csv_raw*
 *.csv-raw*
 error.log
