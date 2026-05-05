@@ -8,11 +8,13 @@ vpath %.csv ../../raw_csv
 SeaSTAR_2025-07-11_08-32-23.L05: SeaSTAR_2025-07-11_08-32-23.L04 
 	echo processing L04 to L05 $@
 	(source ../setup/environment.sh; source ../setup/parameters.sh; ./L04-to-L05.py $< --outputfile $@)
+	echo linking file
 	(source ../setup/environment.sh; ln -s $(PICKLE_DIR)/$@)
 
 SeaSTAR_2025-07-11_08-32-23.L04: SeaSTAR_2025-07-11_08-32-23.csv
 	echo processing csv to L04 $@
 	(source ../setup/environment.sh; source ../setup/parameters.sh; ./L0-to-L04.py $< --outputfile $@)
+	echo linking file
 	(source ../setup/environment.sh; ln -s $(PICKLE_DIR)/$@)
 
 
