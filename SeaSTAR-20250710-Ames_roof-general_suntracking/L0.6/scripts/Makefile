@@ -5,11 +5,11 @@ vpath %.L05 ../../pickle
 
 SeaSTAR_2025-07-10_09-23-46.L06: SeaSTAR_2025-07-10_09-23-46.L05 $(SCRIPTS) $(MODULES) $(PARAMSFILES) 
 	echo processing L05 to L06 $@
-	(source ../setup/environment.sh; source ../setup/parameters.sh; ./L05-to-L06_sun.py $< --outputfile $@)
-	(source ../setup/environment.sh; source ../setup/parameters.sh; ./temp_screen.py $@)
-	(source ../setup/environment.sh; source ../setup/parameters.sh; ./tripletvar_screen.py $@)
-	(source ../setup/environment.sh; source ../setup/parameters.sh; ./temp_correction.py $@)
+	(source ../setup/local.sh; source ../setup/environment.sh; source ../setup/parameters.sh; ./L05-to-L06_sun.py $< --outputfile $@)
+	(source ../setup/local.sh; source ../setup/environment.sh; source ../setup/parameters.sh; ./temp_screen.py $@)
+	(source ../setup/local.sh; source ../setup/environment.sh; source ../setup/parameters.sh; ./tripletvar_screen.py $@)
+	(source ../setup/local.sh; source ../setup/environment.sh; source ../setup/parameters.sh; ./temp_correction.py $@)
 
 
 SeaSTAR_2025-07-10_09-23-46.L05:
-	(source ../setup/environment.sh; ln -s $(PICKLE_DIR)/$@)
+	(source ../setup/local.sh; source ../setup/environment.sh; ln -s $(PICKLE_DIR)/$@)

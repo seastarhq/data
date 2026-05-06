@@ -1,5 +1,5 @@
 SCRIPT=./match_aeronet_seastar.py
-SETUP=../setup/environment.sh ../setup/parameters.sh
+SETUP=../setup/local.sh ../setup/environment.sh ../setup/parameters.sh
 
 # Default target: build the matched pickle for the configured date range.
 # Inputs (AERONET_PICKLE, SEASTAR_CAMPAIGN_DIRS, START, END, ...) come from
@@ -7,6 +7,7 @@ SETUP=../setup/environment.sh ../setup/parameters.sh
 .PHONY: matched
 matched: $(SCRIPT) $(SETUP)
 	@( \
+	  source ../setup/local.sh; \
 	  source ../setup/environment.sh; \
 	  source ../setup/parameters.sh; \
 	  L06_ARGS=""; \

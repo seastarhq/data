@@ -1,8 +1,7 @@
 # Paths used by the AERONET <-> SeaSTAR calibration workflow.
 # Source this before invoking match_aeronet_seastar.py via the Makefile.
 
-ROOT_DIR=~steve/nasa/seastar/seastarhq/data
-CALIBRATION_DIR=$ROOT_DIR/calibration_vs_ref
+CALIBRATION_DIR=$LOCALROOT/calibration_vs_ref
 SCRIPTS_DIR=$CALIBRATION_DIR/scripts
 PICKLE_DIR=$CALIBRATION_DIR/pickle
 PLOTS_DIR=$CALIBRATION_DIR/plots
@@ -18,5 +17,5 @@ SEASTAR_CAMPAIGN_DIRS=(
     "$ROOT_DIR/SeaSTAR-20250710-Ames_roof-general_suntracking/pickle"
 )
 
-export ROOT_DIR CALIBRATION_DIR SCRIPTS_DIR PICKLE_DIR PLOTS_DIR
+export CALIBRATION_DIR SCRIPTS_DIR PICKLE_DIR PLOTS_DIR
 export AERONET_PICKLE SEASTAR_CAMPAIGN_DIRS
