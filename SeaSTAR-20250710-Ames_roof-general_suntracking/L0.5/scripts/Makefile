@@ -7,17 +7,17 @@ vpath %.csv ../../raw_csv
 
 SeaSTAR_2025-07-10_09-23-46.L05: SeaSTAR_2025-07-10_09-23-46.L04 $(SCRIPTS) $(MODULES) $(PARAMSFILES)
 	echo processing L04 to L05 $@
-	(source ../setup/environment.sh; source ../setup/parameters.sh; ./L04-to-L05.py $< --outputfile $@)
+	(source ../setup/local.sh; source ../setup/environment.sh; source ../setup/parameters.sh; ./L04-to-L05.py $< --outputfile $@)
 	echo making symlink
 	# this somehow doesn't work:
-	(source ../setup/environment.sh; ln -s $(PICKLE_DIR)/$@)
+	(source ../setup/local.sh; source ../setup/environment.sh; ln -s $(PICKLE_DIR)/$@)
 
 SeaSTAR_2025-07-10_09-23-46.L04: SeaSTAR_2025-07-10_09-23-46.csv $(SCRIPTS) $(MODULES) $(PARAMSFILES)
 	echo processing csv to L04 $@
-	(source ../setup/environment.sh; source ../setup/parameters.sh; ./L0-to-L04.py $< --outputfile $@)
+	(source ../setup/local.sh; source ../setup/environment.sh; source ../setup/parameters.sh; ./L0-to-L04.py $< --outputfile $@)
 	echo making symlink
 	# this somehow doesn't work:
-	(source ../setup/environment.sh; ln -s $(PICKLE_DIR)/$@)
+	(source ../setup/local.sh; source ../setup/environment.sh; ln -s $(PICKLE_DIR)/$@)
 
 # this needs to be done by going to the RAW_DATA_DIR and running make
 #SeaSTAR_2025-07-10_09-23-46.csv:

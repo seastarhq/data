@@ -1,4 +1,3 @@
-. ./local.sh
 ROOT_DIR=$LOCALROOT/SeaSTAR-20250711-Ames_roof-general_suntracking
 SCRIPTS_DIR=$ROOT_DIR/L0.5/scripts
 RAW_DATA_DIR=$ROOT_DIR/raw_csv
