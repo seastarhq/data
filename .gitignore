@@ -22,7 +22,7 @@ Makefile~
 *_log.csv
 error.log
 errorlog.txt
-environment.sh
+local.sh
 gmt.history
 gmt.conf
 gmt.conf.old
