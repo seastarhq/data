@@ -1,4 +1,4 @@
-ROOT_DIR=~steve/nothing/seastarhq/data/SeaSTAR-20250710-Ames_roof-general_suntracking
+ROOT_DIR=~steve/nasa/seastar/seastarhq/data/SeaSTAR-20250710-Ames_roof-general_suntracking
 SCRIPTS_DIR=$ROOT_DIR/L0.5/scripts
 RAW_DATA_DIR=$ROOT_DIR/raw_csv
 EXTRACTED_DATA_DIR=$ROOT_DIR/L0.5/extracted_txt
@@ -7,3 +7,10 @@ PICKLE_DIR=$ROOT_DIR/pickle
 
 export ROOT_DIR SCRIPTS_DIR RAW_DATA_DIR EXTRACTED_DATA_DIR PLOTS_DIR PICKLE_DIR
 
+<<<<<<< HEAD
+=======
+
+#  you should modify this for your own environment, then do
+# git update-index --skip-worktree <this_file>
+# so that it doesn't get updated on the github
+>>>>>>> 77e6624ee3696e2084deedda3eafffbde0e0ecf5

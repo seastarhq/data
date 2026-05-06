@@ -112,8 +112,10 @@ def calculate_tracking_flags(screeninterval,avginterval,paramsdict): #
     if camera_sun_brightness_stats['min'] == 0:   
         # i.e. the camera didnt' give data for the whole analysis interval
         trackingflags = trackingflags | NO_CAMERA_DATA
-    if camera_sun_brightness_stats['mean'] < paramsdict['brightmin'] or camera_sun_brightness_stats['mean'] > paramsdict['brightmax']:
-        trackingflags = trackingflags | CAMERA_BRIGHTNESS_OOB
+    if camera_sun_brightness_stats['mean'] < paramsdict['brightmin']
+        trackingflags = trackingflags | CAMERA_BRIGHTNESS_LOW 
+    if camera_sun_brightness_stats['mean'] > paramsdict['brightmax']:
+        trackingflags = trackingflags | CAMERA_BRIGHTNESS_HIGH
     return trackingflags
 
 # remaining flags get set at L04 to L05 or later
