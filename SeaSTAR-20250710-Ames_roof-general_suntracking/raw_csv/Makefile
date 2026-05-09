@@ -1,4 +1,4 @@
-SeaSTAR_2025-07-10_09-23-46_log.csv:
+SeaSTAR_2025-07-10_09-23-46.csv:
 	cat 2025-07-10_09-23-45_log.csv_part_* > $@
 
 split:

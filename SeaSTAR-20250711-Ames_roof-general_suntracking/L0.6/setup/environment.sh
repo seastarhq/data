@@ -1,4 +1,4 @@
-ROOT_DIR=~steve/nasa/seastar/seastarhq/data/SeaSTAR-20250711-Ames_roof-general_suntracking
+ROOT_DIR=$LOCALROOT/SeaSTAR-20250711-Ames_roof-general_suntracking
 SCRIPTS_DIR=$ROOT_DIR/L0.6/scripts
 L05_DATA_DIR=$ROOT_DIR/pickle
 RAW_DATA_DIR=$ROOT_DIR/raw_csv

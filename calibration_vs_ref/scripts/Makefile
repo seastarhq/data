@@ -7,9 +7,9 @@ SETUP=../setup/local.sh ../setup/environment.sh ../setup/parameters.sh
 .PHONY: matched
 matched: $(SCRIPT) $(SETUP)
 	@( \
-	  source ../setup/local.sh; \
-	  source ../setup/environment.sh; \
-	  source ../setup/parameters.sh; \
+	  . ../setup/local.sh; \
+	  . ../setup/environment.sh; \
+	  . ../setup/parameters.sh; \
 	  L06_ARGS=""; \
 	  for d in "$${SEASTAR_CAMPAIGN_DIRS[@]}"; do \
 	    for f in "$$d"/pickle/*.L06; do \
