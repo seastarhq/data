@@ -1,4 +1,4 @@
-ROOT_DIR=$LOCALROOT/SeaSTAR-20250711-Ames_roof-general_suntracking
+ROOT_DIR=$LOCALROOT/SeaSTAR-20260517-SLO-FOV_finding_and_temp_tests
 SCRIPTS_DIR=$ROOT_DIR/L0.5/scripts
 RAW_DATA_DIR=$ROOT_DIR/raw_csv
 EXTRACTED_DATA_DIR=$ROOT_DIR/L0.5/extracted_txt
