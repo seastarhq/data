@@ -1,0 +1,23 @@
+testing the temperature sensitivity
+
+plan is to sun-track, while turning the heater on/off every ~10min. 
+
+location is slo airport office
+startup around 11:05 localtime
+
+11:05 heater is off
+11:10 heater on
+11:21 heater off
+11:31 heater on
+11:42 heater off
+11:51 heater on
+12:01 heater off
+12:11 heater on
+12:20 heater off
+12:30 heater on
+12:40 heater off
+appears to have lost tracking - looks like the camera bombed out
+12:42 back to suntracking
+12:49 heater on
+13:01 heater off
+13:09 approx local noon - shutdown for now.

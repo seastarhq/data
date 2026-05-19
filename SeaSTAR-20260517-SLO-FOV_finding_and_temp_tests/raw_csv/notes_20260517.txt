@@ -1,0 +1,43 @@
+fov tests in slo
+two 5-channel boards
+ain0-4 is 380, 440, 500, 550, 675
+ain5-9 is 340, 870, ???, 1020, 1020
+
+13:40, starting a test to turn on the heater - voltages are otherwise reasonably stable
+13:44, turing off the heater to do antoher fov
+
+13:55 running logger - heater is off
+13:58 heater on
+ok canning this test while we find the fov
+
+14:06 restarting logger & hamburger
+14:15 - reset the fov aiming point to star's new value
+14:16 - heater on
+14:23 - heater off
+14:32 - heater on
+14:39   heater off
+14:50 heater on
+15:00 heater off
+15:08 heater on
+15:18 heater off
+15:27 heater on
+15:38 heater off
+15:48 heater on
+15:59 heater off
+16:08 heater on
+16:17 heater off
+16:27 shadow across the channels!
+16:28 shutdown
+
+testing the second 5-channel:
+14:28/9 channel 1 (should be ain5) open
+14:30   channel 1 blocked
+14:30/1   channel 2 open
+14:33    channle 2 blocked
+14:33    channel 3 open
+14:34    channle 3 blocked
+14:35    channel 4 open
+14:37    channel 4 closed
+14:37     channel 5 open
+14:38 channel 5 closed
+
