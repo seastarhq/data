@@ -112,10 +112,10 @@ xlim = (1.0, 1.45)
 # Per-channel y-limits — use None to auto-scale that channel
 ylims = {
     'logch1_1x': (-0.5, -0.1),
-    'logch2_1x': (0.38, 0.45), #(-2,0),
-    'logch3_1x': (0.4, 0.5), #(-2,0),
-    'logch4_1x': None, #(-2,0),
-    'logch5_1x': None, #(-2,0),
+    'logch2_1x': (0.39, 0.44), #(-2,0),
+    'logch3_1x': (0.45, 0.49), #(-2,0),
+    'logch4_1x': (0.44, 0.48), #(-2,0),
+    'logch5_1x': (0.4, 0.5), #(-2,0),
 }
 
 # y-limits for the hot block temperature subplot
