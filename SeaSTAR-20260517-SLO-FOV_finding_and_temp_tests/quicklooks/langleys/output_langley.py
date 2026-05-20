@@ -7,6 +7,7 @@ import argparse
 import pytz
 import tqdm
 import pandas as pd
+import matplotlib.pyplot as plt
 
 # custom seastar modules
 import seastar_datautils
@@ -57,33 +58,16 @@ else:
 
 
 
+rows = []
+
 with open(outfile, "w") as textfile:
 
     for timestep in tqdm.tqdm(range(len(L06_data))):
 
         mydatetime = L06_data[timestep]['datetime']
-        #motor_0_enc = np.nan # not important?
-    #motor_1_enc = np.nan # not important?
-    #motor_2_enc = np.nan
-    #quaternion_w = np.nan
-    #quaternion_x = np.nan
-    #quaternion_y = np.nan
-    #quaternion_z = np.nan
         mysun_ephem_az = L06_data[timestep]['sun_ephem_az']
         mysun_ephem_elev = L06_data[timestep]['sun_ephem_elev']
-    #L06_data[timestep]['camera_sun_x'] = np.nanmean(L05_data[timestep][:]['camera_sun_x'])
-    #L06_data[timestep]['camera_sun_y'] = np.nanmean(L05_data[timestep][:]['sun_ephem_elev'])
-    #L06_data[timestep]['camera_sun_brightness'] = np.nanmean(L05_data[timestep][:]['sun_ephem_elev'])
-    #L06_data[timestep]['camera_target_x'] = np.nanmean(L05_data[timestep][:]['sun_ephem_elev'])
-    #L06_data[timestep]['camera_target_y'] = np.nanmean(L05_data[timestep][:]['sun_ephem_elev'])
-    #angular_vx = np.nan
-    #angular_vy = np.nan
-    #angular_vz = np.nan
-    #linear_ax = np.nan
-    #linear_ay = np.nan
-    #linear_az = np.nan
-    #L06_data[timestep]['imu_temp'] = np.nanmean(L05_data[timestep][:]['imu_temp'])
-        myimu_press = L06_data[timestep]['imu_press'] 
+        myimu_press = L06_data[timestep]['imu_press']
         mylat = L06_data[timestep]['imu_lat']
         mylon = L06_data[timestep]['imu_lon']
         logch1_1x = math.log(-1.0 * (L06_data[timestep]['ch1_1x'] - 0.009))
@@ -92,29 +76,89 @@ with open(outfile, "w") as textfile:
         logch4_1x = math.log(-1.0 * (L06_data[timestep]['ch4_1x'] - 0.009))
         logch5_1x = math.log(-1.0 * (L06_data[timestep]['ch5_1x'] - 0.009))
         myhot_block_temp =  L06_data[timestep]['hot_block1_temp']
-        myeuclidian_dist = L06_data[timestep]['euclidian_dist'] 
-        mytracking_flags = L06_data[timestep]['tracking_flags'] 
+        mydTdt_smooth = L06_data[timestep]['dTdt_smooth']
+        myd2Tdt2_smooth = L06_data[timestep]['d2Tdt2_smooth']
+        myeuclidian_dist = L06_data[timestep]['euclidian_dist']
+        mytracking_flags = L06_data[timestep]['tracking_flags']
         myrobot_flags = L06_data[timestep]['robot_flags']
-        myhousekeeping_flags =L06_data[timestep]['housekeeping_flags'] 
-        myradiometer_1x_flags = L06_data[timestep]['radiometer_1x_flags'] 
-    #L06_data[timestep]['radiometer_100x_flags'] = L05_data[timestep][4]['flags']
-    #L06_data[timestep]['radiometer_10kx_flags'] = L05_data[timestep][5]['flags']
-    #L06_data[timestep]['cloud_flags'] = 0
-
+        myhousekeeping_flags =L06_data[timestep]['housekeeping_flags']
+        myradiometer_1x_flags = L06_data[timestep]['radiometer_1x_flags']
 
         airmass = airmass_star(mysun_ephem_elev, myimu_press)
         dataline = f"{airmass} {logch1_1x} {logch2_1x} {logch3_1x} {logch4_1x} {logch5_1x} {myhot_block_temp}\n"
         textfile.write(dataline)
+
+        rows.append({
+            'datetime': mydatetime,
+            'airmass': airmass,
+            'logch1_1x': logch1_1x,
+            'logch2_1x': logch2_1x,
+            'logch3_1x': logch3_1x,
+            'logch4_1x': logch4_1x,
+            'logch5_1x': logch5_1x,
+            'hot_block_temp': myhot_block_temp,
+            'dTdt_smooth': mydTdt_smooth,
+            'd2Tdt2_smooth': myd2Tdt2_smooth,
+        })
+
+df = pd.DataFrame(rows)
+
+channels = ['logch1_1x', 'logch2_1x', 'logch3_1x', 'logch4_1x', 'logch5_1x']
+labels   = [f'Ch{i} ({nm} nm)' for i, nm in enumerate([CH1_NM, CH2_NM, CH3_NM, CH4_NM, CH5_NM], start=1)]
+
+# Set to (min, max) to fix axis limits, or None to auto-scale
+xlim = (1.0, 1.45)
+
+# Per-channel y-limits — use None to auto-scale that channel
+ylims = {
+    'logch1_1x': (-0.5, -0.1),
+    'logch2_1x': (0.38, 0.45), #(-2,0),
+    'logch3_1x': (0.4, 0.5), #(-2,0),
+    'logch4_1x': None, #(-2,0),
+    'logch5_1x': None, #(-2,0),
+}
+
+# y-limits for the hot block temperature subplot
+temp_ylim =  (34,38)  # e.g. (20.0, 40.0)
+
+# Dashed vertical lines at these airmass values (empty list = none)
+vlines = [1.405, 1.382, 1.325, 1.30, 1.245, 1.225, 1.195, ]
+
+n_subplots = len(channels) + 1  # +1 for hot_block_temp
+fig, axes = plt.subplots(n_subplots, 1, figsize=(8, 3 * n_subplots), sharex=True)
+
+for ax, col, label in zip(axes, channels, labels):
+    ax.scatter(df['airmass'], df[col], s=4, label=label)
+    ax.set_ylabel(f'ln(V) — {label}')
+    ax.legend(loc='upper right')
+    if xlim is not None:
+        ax.set_xlim(xlim)
+    if ylims.get(col) is not None:
+        ax.set_ylim(ylims[col])
+    for vx in vlines:
+        ax.axvline(vx, color='gray', linestyle='--', linewidth=0.8)
+
+ax_temp = axes[-1]
+ax_temp.scatter(df['airmass'], df['hot_block_temp'], s=4, color='tab:red', label='Hot block temp')
+ax_temp.set_ylabel('Temp (°C)')
+ax_temp.set_xlabel('Airmass')
+ax_temp.legend(loc='upper right')
+if xlim is not None:
+    ax_temp.set_xlim(xlim)
+if temp_ylim is not None:
+    ax_temp.set_ylim(temp_ylim)
+for vx in vlines:
+    ax_temp.axvline(vx, color='gray', linestyle='--', linewidth=0.8)
+
+fig.suptitle('Langley Plot: Airmass vs ln(Voltage) by Channel')
+plt.tight_layout()
+
+plot_path = os.path.splitext(outfile)[0] + '_langley.png'
+plt.savefig(plot_path, dpi=150)
+print(f"Plot saved to {plot_path}")
     
 
 
-
-#try:
-#    with open(L06_npyfile, 'bw') as arrayfile:
-#        np.savez(arrayfile, array_data=L06_data, metadata = metadata)
-#except FileNotFoundError:
-#    with open('recoveryfilename.L06', 'bw') as arrayfile:
-#        np.savez(arrayfile, array_data=L06_data, metadata = metadata)
 
 
 
