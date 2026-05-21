@@ -32,25 +32,3 @@ TEMP_D2TDT2_TOLERANCE = float(os.environ['TEMP_D2TDT2_TOLERANCE'])
 
 TEMP_CORR_BASELINE = float(os.environ['TEMP_CORR_BASELINE'])
 TEMP_CORR_SCALEFACTOR = float(os.environ['TEMP_CORR_SCALEFACTOR'])
-
-CALIBRATION_SOURCE = os.environ['CALIBRATION_SOURCE']
-CALIBRATION_DATE = os.environ['CALIBRATION_DATE']
-
-CH1_NM = int(os.environ['CH1_NM'])
-CH2_NM = int(os.environ['CH2_NM'])
-CH3_NM = int(os.environ['CH3_NM'])
-CH4_NM = int(os.environ['CH4_NM'])
-CH5_NM = int(os.environ['CH5_NM'])
-
-CH1_DARK = float(os.environ['CH1_DARK'])
-CH2_DARK = float(os.environ['CH2_DARK'])
-CH3_DARK = float(os.environ['CH3_DARK'])
-CH4_DARK = float(os.environ['CH4_DARK'])
-CH5_DARK = float(os.environ['CH5_DARK'])
-
-#VZERO_CH1 = float(os.environ['VZERO_CH1'])
-#VZERO_CH2 = float(os.environ['VZERO_CH2'])
-#VZERO_CH3 = float(os.environ['VZERO_CH3'])
-#VZERO_CH4 = float(os.environ['VZERO_CH4'])
-#VZERO_CH5 = float(os.environ['VZERO_CH5'])
-

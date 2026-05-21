@@ -119,22 +119,22 @@ channels = ['logch1_1x', 'logch2_1x', 'logch3_1x', 'logch4_1x', 'logch5_1x']
 labels   = [f'Ch{i} ({nm} nm)' for i, nm in enumerate([CH1_NM, CH2_NM, CH3_NM, CH4_NM, CH5_NM], start=1)]
 
 # Set to (min, max) to fix axis limits, or None to auto-scale
-xlim = (1.0, 1.45)
+xlim = (1.0, 1.15)
 
 # Per-channel y-limits — use None to auto-scale that channel
 ylims = {
-    'logch1_1x': (-0.35, -0.1),
-    'logch2_1x': (0.39, 0.44), #(-2,0),
-    'logch3_1x': (0.44, 0.485), #(-2,0),
-    'logch4_1x': (0.42, 0.465), #(-2,0),
-    'logch5_1x': (0.515, 0.545), #(0.4, 0.5), #(-2,0),
+    'logch1_1x': (-0.18, -0.12),
+    'logch2_1x': (0.41, 0.425), #(-2,0),
+    'logch3_1x': (0.47, 0.480), #(-2,0),
+    'logch4_1x': (0.44, 0.460), #(-2,0),
+    'logch5_1x': (0.532, 0.54), #(0.4, 0.5), #(-2,0),
 }
 
 # y-limits for the hot block temperature subplot
-temp_ylim =  (34,38)  # e.g. (20.0, 40.0)
+temp_ylim =  (28,42.5)  # e.g. (20.0, 40.0)
 
 # Dashed vertical lines at these airmass values (empty list = none)
-vlines = [1.405, 1.382, 1.323, 1.30, 1.245, 1.227, 1.19, 1.175, 1.145, 1.134, 1.11, 1.10, 1.082,]
+vlines = [1.13, 1.12, 1.067, 1.0625, 1.049,  1.045, 1.038, 1.0355, 1.0315]
 
 n_subplots = len(channels) + 1  # +1 for hot_block_temp
 fig, axes = plt.subplots(n_subplots, 1, figsize=(8, 3 * n_subplots), sharex=True)

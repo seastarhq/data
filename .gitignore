@@ -20,6 +20,7 @@ Makefile~
 *.csv-raw*
 *.csv
 *_log.csv
+*errors.log
 error.log
 errorlog.txt
 local.sh
