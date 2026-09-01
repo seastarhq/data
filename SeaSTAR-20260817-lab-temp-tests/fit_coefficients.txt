@@ -1,0 +1,17 @@
+# straight-line least squares fits of the SeaSTAR J3 channels against Temp3
+# signal = slope * Temp3 + intercept, signal in volts, Temp3 in degrees C
+# HamburgerData_2026_08_17_12_23_41_1savg.pkl, 2026_08_17, 12:23:41 to 16:00:29
+# samples left out: heater-on, lamp-off, disturbed
+# written by plot_vs_temperature.py, 2026-08-20 12:34
+#
+# channel     gain   slope (V/degC)  slope (uV/degC)    intercept (V)         r2  nsamples
+  J3_CH1_0       0    -2.155299e-06           -2.155        -0.000121   0.046513     10994
+  J3_CH2_0       0    -3.858301e-06           -3.858        -0.000308   0.148037     10994
+  J3_CH3_0       0    -2.192367e-06           -2.192        -0.000313   0.053714     10994
+  J3_CH4_0       0    -3.257132e-06           -3.257        -0.000182   0.108011     10994
+  J3_CH5_0       0    -5.641838e-06           -5.642        -0.000205   0.263352     10994
+  J3_CH1_2       2    +4.430750e-04         +443.075        +0.005753   0.897957     10994
+  J3_CH2_2       2    +2.139704e-04         +213.970        -0.017328   0.805705     10994
+  J3_CH3_2       2    +3.910350e-04         +391.035        -0.018480   0.864494     10994
+  J3_CH4_2       2    +2.948960e-04         +294.896        -0.004196   0.857648     10994
+  J3_CH5_2       2    +3.930175e-05          +39.302        -0.006727   0.139872     10994

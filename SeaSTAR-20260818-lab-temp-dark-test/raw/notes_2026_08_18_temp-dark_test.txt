@@ -1,0 +1,5 @@
+10:58 start
+10:58 lamp off
+11:00 heater on
+11:10 heater off
+12:37 stop

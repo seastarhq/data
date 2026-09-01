@@ -18,6 +18,7 @@ Makefile~
 *.pkl
 *.csv_raw*
 *.csv-raw*
+*.txt-raw*
 *.csv
 *_log.csv
 *errors.log
@@ -29,3 +30,4 @@ gmt.conf
 gmt.conf.old
 __pycache__/
 download/
+.venv/

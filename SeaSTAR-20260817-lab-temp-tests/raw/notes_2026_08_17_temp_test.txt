@@ -1,0 +1,25 @@
+12:24 start
+12:25 turn on heater
+12:25 I = 2.533A
+12:29 I = 2.531A
+12:30 temp = 40.56
+12:30 heater off
+12:37 briefly opening the room door
+14:29 briefly opening the room door
+14:30 turning on the heater
+14:30 I = 2.531 A
+14:35 heater off
+14:36 briefly opening the room door
+15:18 briefly opening the room door
+15:20 darks on each channel from outboard to inboard
+15:23 heater on
+15:31 heater off 
+15:31 I = 2.531 A
+15:32 briefly opening the room door
+16:02 briefly opening the room door
+16:03 lamp off
+16:06 darks on all channels
+16:06 heater on
+16:09 heater off
+16:10 end test
+
