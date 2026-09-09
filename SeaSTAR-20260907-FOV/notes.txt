@@ -1,0 +1,115 @@
+SeaSTAR-20260907-FOV -- processing notes
+Written 2026-09-07
+
+
+1. CSV FORMAT CHANGE
+--------------------
+
+The log format gained columns and renamed the channels. Three generations exist
+in the data tree:
+
+  2025-07-09   37 cols   time..hScale, j3_ch1_1x..j3_ch5_1x
+  2026-05-17   43 cols   ...as above, plus t3, boardTemp, imuBlend, m1Gain, m2Gain, state
+  2026-09-07   51 cols   time..hScale, ch1_1x..ch10_1x, t3, t4, t5, t6,
+                         boardTemp, imuBlend, m1Gain, m2Gain, state
+
+Two changes matter for processing:
+  - 5 channels became 10.
+  - The "j3_" prefix was dropped from the channel names.
+
+The first 32 columns (time..hScale) are unchanged across all three.
+
+
+2. CHANGES TO scripts/processFov.py
+-----------------------------------
+
+Columns are now located by header name rather than by position, matching
+  ^(?:j3_)?ch(\d+)_1x$
+so one script reads all three generations above.
+
+The previous version hard-coded 37 unpack targets, so it could not load the
+43-column May file either -- that was already broken before the 10-channel
+format arrived, not a new regression.
+
+Other changes:
+  - All 10 channels by default; --channels 1-5,7 subsets a run (comma lists and
+    hyphen ranges). Unknown channel numbers are rejected with a list of what the
+    file actually contains.
+  - The mask floor is now --frac (default 0.05) of EACH CHANNEL'S OWN peak,
+    replacing the absolute 0.025 cutoff. This matters because channel
+    magnitudes now span ~300x (ch7 ~ 1.80, ch8/ch9 ~ 0.0062); the old absolute
+    cutoff would have blanked ch8 and ch9 entirely.
+  - Output is two subplot-grid figures rather than 2N separate windows:
+    <stem>_fov_contours.png and <stem>_fov_maps.png.
+  - --outdir (default "plots", created if absent) and --no-show, which switches
+    matplotlib to Agg for headless runs.
+  - Full argparse. The old positional command line no longer works.
+  - The state column is ignored; --start-log still does the row skipping.
+
+Two additions beyond the format work, both forced by the new data:
+
+  - Gridding is vectorised (searchsorted + bincount) instead of the nested
+    per-sample loop, which at 10 channels x 55k rows was doing 557k argmin
+    calls. Verified bit-identical to the original loop on the 2025 scan:
+    max abs difference 0.0, NaN masks equal.
+  - A degenerate-grid guard. The 2026-09-07 file collapses to a 2x1 grid at the
+    default step and previously produced a raw matplotlib TypeError; it now
+    exits with a message naming the grid size and the step used.
+
+Channels with no data above the mask are skipped with a note and their axes
+blanked, and the averaged centre is taken only over channels that produced one,
+so a dead channel no longer skews the average or crashes on allsegs[-1][0].
+
+--outdir is relative to the working directory, not to the script location.
+Run from the dataset root to get ./plots.
+
+
+3. RUN ON raw/2026-09-07_14-14-53_log.csv
+-----------------------------------------
+
+  scripts/processFov.py raw/2026-09-07_14-14-53_log.csv --no-show --delta-step 0.001
+
+Wrote plots/2026-09-07_14-14-53_log_fov_contours.png
+      plots/2026-09-07_14-14-53_log_fov_maps.png
+
+  Channel  1: 0.51249259  0.51577048
+  Channel  2: 0.51235830  0.51484580
+  Channel  3: 0.51252882  0.51513267
+  Channel  4: 0.50620122  0.52159409
+  Channel  5: 0.51221967  0.52150472
+  Channel  6: 0.51258184  0.51538420
+  Channel  7: 0.51257813  0.51626767
+  Channel  8: 0.50524898  0.52142409
+  Channel  9: 0.50524898  0.52142409
+  Channel 10: 0.51264454  0.51605723
+
+  Averaged center: 0.5104103067885316  0.5179405046424175
+
+
+4. CAVEATS ON THAT RUN -- READ BEFORE USING THE NUMBERS
+-------------------------------------------------------
+
+4a. THIS LOG IS NOT AN FOV SCAN, AND THE CENTRE ABOVE IS NOT USABLE.
+
+The default --delta-step 0.01 will not run on it: the stage positions collapse
+to a 2x1 grid and the script exits. It needs --delta-step 0.001 to grid at all,
+which yields 8x5.
+
+  sx spans 0.505   -- 0.51375   (0.009,  8 unique values)
+  sy spans 0.515   -- 0.52167   (0.007,  5 unique values)
+  state == 2 on all but the first two rows
+
+The resulting panels are gradients across a signal range of about 0.3%
+(ch7 runs 1.788 -> 1.808), not FOV spots. The centres scatter across the full
+0.505-0.514 width of the data. For comparison, the 2025-07-09 scan
+(13x14 grid) put all five channels within ~0.001 of each other at
+(0.5088, 0.5240). The averaged centre in section 3 should not be used as an
+FOV centre. The script needs a real scan to produce anything meaningful.
+
+4b. ch8 AND ch9 ARE IDENTICAL IN THE RAW LOG.
+
+Byte-identical on all 55,776 data rows -- verified by direct comparison, not
+inferred from the plots. Hence the identical panels and the identical centre
+0.50524898 0.52142409. This is in the logger output, not an artefact of
+processing. Could be a deliberate split/duplicated input, could be a wiring or
+logging bug. Worth checking against the instrument config.

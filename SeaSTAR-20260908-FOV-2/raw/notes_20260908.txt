@@ -1,0 +1,32 @@
+Started, suntracking...
+
+
+Started a new log file around 11:02
+Trying another fov alignment
+xCent = 0.51041
+yCent = 0.51794
+
+xRange = np.linspace(-0.1, 0.1, 11)
+yRange = np.flip(np.linspace(-0.15, 0.15, 11))
+
+aborted...
+Trying again after decreasing motor gains and increasing the sleep time
+seastar_logs/2026-09-08_11-03-43_log.csv
+finished at 11:14
+
+restarted suntracking 11:15
+2026-09-08_11-15-14_log.csv
+11:30 changed aiming point to the new center x=0.50905 y=0.51751
+
+started a new file for a fine alignment
+2026-09-08_11-31-45_log.csv
+xCent = 0.50905
+yCent = 0.51751
+xRange = np.linspace(-0.05, 0.05, 11)
+yRange = np.flip(np.linspace(-0.075, 0.075, 11))
+aborted - clouds
+
+11:52 another attempt
+2026-09-08_11-52-59_log.csv
+12:12 done.
+

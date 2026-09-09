@@ -1,0 +1,18 @@
+Started, suntracking...
+
+
+Started a new log file around 11:02
+Trying another fov alignment
+xCent = 0.51041
+yCent = 0.51794
+
+xRange = np.linspace(-0.1, 0.1, 11)
+yRange = np.flip(np.linspace(-0.15, 0.15, 11))
+
+aborted...
+Trying again after decreasing motor gains and increasing the sleep time
+seastar_logs/2026-09-08_11-03-43_log.csv
+finished at 11:14
+
+restarted suntracking 11:15
+2026-09-08_11-15-14_log.csv
