@@ -1,0 +1,3 @@
+This day had surprisingly low and reasonably consistent AOD, as measured by the Cimel.
+
+https://aeronet.gsfc.nasa.gov/cgi-bin/data_display_aod_v3?site=San_Luis_Obispo&nachal=0&year=2026&month=9&day=14&aero_water=0&level=2&if_day=0&if_err=0&place_code=10&year_or_month=0
