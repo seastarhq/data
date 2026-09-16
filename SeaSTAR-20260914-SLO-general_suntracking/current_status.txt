@@ -1,0 +1,21 @@
+Paths are fixed and every directory each environment.sh points at now resolves.
+
+  What changed
+
+  - L0.5/setup/environment.sh — ROOT_DIR → $LOCALROOT/SeaSTAR-20260914-SLO-general_suntracking, RAW_DATA_DIR → $ROOT_DIR/raw.
+  - L0.5/setup/local.sh (new, gitignored) — defines LOCALROOT=/home/steve/nothing/seastar/seastarhq/data. The L0.5 Makefile
+    sources this file but it didn't exist anywhere on disk, so make would have failed at the . ../setup/local.sh step.
+  - L0.6/setup/environment.sh — replaced the stale ~steve/nasa/.../20250710 path with the real 20260914 directory;
+    SCRIPTS_DIR/EXTRACTED_DATA_DIR/PLOTS_DIR now point at L0.6/scripts, L0.6/extracted_txt, L0.6/plots (the old values had a
+    quicklooks_timeseries/ layer that doesn't match the 20260908 layout); RAW_DATA_DIR → $ROOT_DIR/raw.
+  - L1.0/setup/environment.sh — same root fix; SCRIPTS_DIR/EXTRACTED_DATA_DIR/PLOTS_DIR now point into L1.0/ instead of L0.6/;
+    RAW_DATA_DIR → $ROOT_DIR/raw.
+  - L0.5/scripts/Makefile — vpath %.csv ../../raw_csv → ../../raw.
+  - L0.6/scripts/Makefile — vpath %.L06 ../../../pickle → ../../pickle (was one level too deep).
+  - Created empty extracted_txt/ and plots/ under each level so the output paths exist.
+
+  Still hardcoded to the old day (not touched): the Makefile targets and do_raw_to_L05.sh / do_extract_vars.sh all name
+  SeaSTAR_2025-07-10_09-23-46.*. Your assembled raw file is raw/2026-09-14_log.csv, so those target names will need to become
+  whatever L0-to-L04.py produces for this day. Also L0.6/setup/environment.sh has SEASTAR_TIMEZONE=null while L0.5/L1.0 use
+  US/Pacific — inherited from the source, left as-is.
+

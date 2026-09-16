@@ -1,0 +1,93 @@
+We want to use bitwise flags to flag data.
+
+
+Possible tracking faults:
+
+- no camera data   :   1   
+- tracking exceeds threshold  (threshold tbd) : 2
+- camera brightness below threshold (threshold tbd) : 4
+
+Possible robot faults:
+
+- encoder dropout : 1 
+
+Possible housekeeping faults:
+
+hot block 1 out of bounds (bounds tbd)  : 1
+hot block 2 out of bounds (bounds tbd) : 2 
+cold block out of bounds (bounds tbd) : 4
+IMU temp out of bounds (bounds tbd) : 8
+IMU pressure oob    : 16
+water temp out of bounds (bounds tbd) : 32
+coolingplate out of bounds (bounds tbd) : 64
+polarizerplate out of bounds (bounds tbd) : 128
+a/d temp out of bounds : 256
+hamburger out of bounds : 512
+humidity high : 1024
+
+Possible measurement faults:
+
+1 x Measurement faults 
+Channel 1 error   1 
+Channel 2 error   2
+Channel 3 error   4
+Channel 4 error   8  
+Ch 5                16
+Ch 6                32
+Ch 7                64
+Ch 8                128
+Ch 9                256
+Ch 10               512
+Ch 11               1024   
+Ch 12               2048   
+Ch 13               4096
+Ch 14               8192
+
+100 x Measurement faults 
+Channel 1 error   1 
+Channel 2 error   2
+Channel 3 error   4
+Channel 4 error   8  
+Ch 5                16
+Ch 6                32
+Ch 7                64
+Ch 8                128
+Ch 9                256
+Ch 10               512
+Ch 11               1024   
+Ch 12               2048   
+Ch 13               4096
+Ch 14               8192
+
+10000 x Measurement faults 
+Channel 1 error   1 
+Channel 2 error   2
+Channel 3 error   4
+Channel 4 error   8  
+Ch 5                16
+Ch 6                32
+Ch 7                64
+Ch 8                128
+Ch 9                256
+Ch 10               512
+Ch 11               1024   
+Ch 12               2048   
+Ch 13               4096
+Ch 14               8192
+
+
+
+
+In python:
+
+adding or setting flags: 
+flagvariable = FLAG1 | FLAG2 | FLAG2 
+
+checking flags:
+
+if flagvariable & FLAG1:
+    do something if FLAG1 is set
+
+unsetting flags:
+flagvariable & ~FLAG1
+
