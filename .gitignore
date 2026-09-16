@@ -31,3 +31,4 @@ gmt.conf.old
 __pycache__/
 download/
 .venv/
+*.stamp

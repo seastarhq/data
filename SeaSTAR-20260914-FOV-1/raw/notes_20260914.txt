@@ -1,0 +1,11 @@
+finging the fov of the new camera.
+
+15:00 start
+2026-09-14_15-01-08_log.csv
+xCent = 0.50905
+yCent = 0.51751
+
+xRange = np.linspace(-0.1, 0.1, 11)
+yRange = np.flip(np.linspace(-0.15, 0.15, 11))
+
+15:17 done
