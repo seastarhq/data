@@ -1,0 +1,22 @@
+finding the fov after 550, 940nm filter changes
+
+14:21 starting fov scan
+2026-09-17_14-21-11_log.csv
+xCent = 0.5454
+yCent = 0.5388
+xRange = np.linspace(-0.05, 0.05, 15)
+yRange = np.flip(np.linspace(-0.075, 0.075, 15))
+
+14:44 done
+
+
+14:54 starting finer scan
+2026-09-17_14-54-13_log.csv
+xCent = 0.5469
+yCent = 0.5358
+xRange = np.linspace(-0.06, 0.06, 21)
+yRange = np.flip(np.linspace(-0.08, 0.08, 21))
+
+15:39 done
+
+
