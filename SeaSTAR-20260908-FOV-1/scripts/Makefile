@@ -11,7 +11,7 @@
 #   make clean      throw away the plots
 #
 # the python in the venv at the top of the tree, unless told otherwise:
-PYTHON ?= ../../../bin/python
+PYTHON ?= ../../.venv/bin/python
 
 FOV_SCRIPT = ./processFov.py
 TS_SCRIPT = ./plotTimeseries.py
