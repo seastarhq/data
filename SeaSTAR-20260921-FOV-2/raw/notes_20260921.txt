@@ -1,0 +1,29 @@
+Running on Ames roof. Hoping to do alignment. 8/8 Cloudy but hoping for improvement.
+
+10:42 startup
+
+10:42 startup
+
+10:59 stopping to wait for clouds to clear.
+
+13:27 startup again
+2026-09-21_13-27-19_log.csv
+13:28 start scan
+yCent = 0.5358
+yCent = 0.5358
+xRange = np.linspace(-0.06, 0.06, 21)
+yRange = np.flip(np.linspace(-0.08, 0.08, 21))
+
+14:16 done
+
+14:17 restarting general suntracking
+2026-09-21_14-17-46_log.csv
+
+14:33 restarting another scan
+2026-09-21_14-33-36_log.csv
+xCent = 0.5472
+yCent = 0.5357
+xRange = np.linspace(-0.04, 0.04, 21)
+yRange = np.flip(np.linspace(-0.06, 0.06, 21))
+
+15:19 done
