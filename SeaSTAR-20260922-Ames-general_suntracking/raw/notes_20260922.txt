@@ -1,0 +1,5 @@
+12:21 up and running. general suntracking at ames.
+
+16:26 tweaked the bias driver
+
+17:33 shutdown
