@@ -1,0 +1,9 @@
+10:46 startup
+10:47 time set, biases aligned, amplifiers on
+11:32 nominal
+12:09 nominal
+13:53 nominal
+14:42 nominal
+15:49 nominal. tweaked tracking just a little
+16:26 nominal. shutting down.
+
