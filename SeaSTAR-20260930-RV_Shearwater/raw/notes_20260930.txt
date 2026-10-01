@@ -1,0 +1,56 @@
+07:08 up and running on shearwater. sun is very low with some mist and clouds
+hamburger froze, restarted
+lost tracking, lost gps
+restarted. possible sun is not bright enough to track
+sun is very low, close to robot singularity. reflections off the water not helping
+07:37 cloudy for the last ~10min 
+07:38 stopped the robot. not much chance of tracking
+07:46 restart attempt. clouds
+07:55 cloudy
+08:01 restart attempt. clouds
+
+trouble with homing motor 1. 
+several restarts. 
+blink code 1 green 6 red - communication?
+motor 1 not responding at all now.
+
+10:45 tightened motor-gearbox coupling. motor now homes.
+10:45 up and running!
+did a microtops here.
+11:01 boat turns 180deg
+11:01 diode temps ~26.8
+11:01-11:04 sequence of darks starting at channel 10, down to ch1
+~11:20 clouds
+~11:23 clouds
+~11:25 clouds
+clouds...
+~11:31 darks sequence ch10 to ch1. diode temps ~28c
+tracking switched to ephemeris & back because of clouds
+11:38 clouds
+11:41 stopping for a dive station, clouds
+12:04 partly cloudy
+12:08 still some clouds
+12:09 clouds
+12:21 clouds
+12:29 clouds
+12:40 clouds
+13:05 clouds
+13:05-13:07 sequence of darks, ch10 to ch1, diode temps ~32c
+13:11 on the edge of the clouds
+13:24 on the edge of the clouds
+13:28 maybe clear of clouds. still a bit hazy
+13:29 motor gains += 0.1
+13:32 motor gains += 0.1, i.e 1.32 and 1.31
+13:53 imublend up from 0.4 to 0.65. seems to track better
+13:43 imublend up to 0.7
+13:45 motor gains +=0.1 briefly - seems to get too twitchy
+13:45 imublend 0.8
+13:55 tweked the biases. tracking went a bit underdamped. tweaked the gains. settled on 1.1 and 1.0
+14:24 imublend 0.75
+14:25 sequece of darks ch10 to ch1. diode temps ~32c
+14:28 m1 gain 0.9
+14:29 m0 gain 1.2
+14:58 sequence of darks ch10 to ch1. diode temps ~31.5c
+15:20 sequence of darks ch10 to ch1. diode temps ~31.0c
+15:36 sequence of darks ch10 to ch1. diode temps ~31.0c
+15:48 back in port. shutting down

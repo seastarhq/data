@@ -1,0 +1,10 @@
+11:58 up and running in SLO.
+12:00 restarted hamburger.
+13:51 nominal
+14:31 truck pulling up.
+14:31 setting gains & imublend for sea
+m0 gain 1.06
+m1 gain 1.07
+imublend 0.4
+14:33 shutting down
+
