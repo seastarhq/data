@@ -1,0 +1,9 @@
+0 homing
+1 imu tracking
+2 sun tracking
+3 sun finding
+4 almucantar scan
+5 principal plane scan
+6 dark
+7 shutdown
+8 camera ephemeris
