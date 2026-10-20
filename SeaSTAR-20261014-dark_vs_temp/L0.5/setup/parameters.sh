@@ -24,6 +24,11 @@ IMU_TEMP_MIN=40
 IMU_PRESS_MIN=800
 IMU_PRESS_MAX=1100
 
+# set to 1 if a block's inboard and outboard temperature sensors are the other way round
+# from hardware/configuration-sept-2026.md, which reverses the interpolation across the channels
+SWAP_BLOCK1_TEMPS=0
+SWAP_BLOCK2_TEMPS=0
+
 export SEASTAR_TIMEZONE
 export AVG_INTERVAL ANALYSIS_MARGIN 
 export HOT_BLOCK1_MIN HOT_BLOCK1_MAX
@@ -34,3 +39,4 @@ export BRIGHTNESS_MIN BRIGHTNESS_MAX
 export TRACKING_EUCLIDIAN_MAX
 export IMU_TEMP_MAX IMU_TEMP_MIN
 export IMU_PRESS_MAX IMU_PRESS_MIN
+export SWAP_BLOCK1_TEMPS SWAP_BLOCK2_TEMPS

@@ -10,6 +10,8 @@ import math
 #                   [3] is 1x radiometer flags
 #                   [4] is 100x radiometer flags
 #                   [5] is 10kx radiometer flags
+#                   [6] is cloud flags
+#                   [7] is user-set flags
 
 # OOB means Out Of Bounds
 
@@ -98,7 +100,10 @@ AUTO_CLOUD_2 = 16
 HAND_CLOUD_CIRRUS = 32  
 HAND_CLOUD_1 = 64
 HAND_CLOUD_2 = 128
-HAND_CLOUD_3 = 265
+HAND_CLOUD_3 = 256
+
+# user flags
+HEATER_ON = 1
 
 # tracking flags get set at L0 to L04
 def calculate_tracking_flags(screeninterval,avginterval,paramsdict): #

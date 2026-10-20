@@ -36,6 +36,10 @@ parser.add_argument('-m', '--margin', type=float)
 parser.add_argument('--trackerror', type=float)
 parser.add_argument('--brightmin', type=float)
 parser.add_argument('--brightmax', type=float)
+parser.add_argument('--swap-block1-temps', action=argparse.BooleanOptionalAction,
+                    help='block 1 inboard/outboard temperature sensors are swapped (t3 outboard, t5 inboard)')
+parser.add_argument('--swap-block2-temps', action=argparse.BooleanOptionalAction,
+                    help='block 2 inboard/outboard temperature sensors are swapped (t4 outboard, t6 inboard)')
 args = parser.parse_args()
 
 # get analysis parameters from command line arguments
@@ -54,6 +58,10 @@ if args.brightmin is not None:
     BRIGHTNESS_MIN = args.brightmin
 if args.brightmax is not None:
     BRIGHTNESS_MAX = args.brightmax
+if args.swap_block1_temps is not None:
+    SWAP_BLOCK1_TEMPS = args.swap_block1_temps
+if args.swap_block2_temps is not None:
+    SWAP_BLOCK2_TEMPS = args.swap_block2_temps
 
 # findFile needs a list passed to it, so we make one of length 1: 
 raw_data_dirs = [RAW_DATA_DIR, './']
@@ -64,6 +72,8 @@ logfile_date = os.path.basename(seastar_logfile).split("_")
 sys.stderr.write(f"seastar logfile date: {logfile_date[0]}\n")
 sys.stderr.write(f"averaging interval: {avg_interval}\n")
 sys.stderr.write(f"analysis margin: {analysis_margin}\n")
+sys.stderr.write(f"block 1 temperature sensors swapped: {SWAP_BLOCK1_TEMPS}\n")
+sys.stderr.write(f"block 2 temperature sensors swapped: {SWAP_BLOCK2_TEMPS}\n")
 
 # automatically generate the output filename if we don't give it one
 if args.outputfile is None: 
@@ -106,11 +116,17 @@ df.rename(columns={" rx": "angular_vx", " ry": "angular_vy", " rz": "angular_vz"
 # radiometer variables are named appropriately however we need to remove the space in the name
 df.rename(columns={" ch1_1x": "ch1_1x", " ch2_1x": "ch2_1x", " ch3_1x": "ch3_1x", " ch4_1x": "ch4_1x", " ch5_1x": "ch5_1x"},inplace=True)
 df.rename(columns={" ch6_1x": "ch6_1x", " ch7_1x": "ch7_1x", " ch8_1x": "ch8_1x", " ch9_1x": "ch9_1x", " ch10_1x": "ch10_1x"},inplace=True)
-# rename the temps
-df.rename(columns={" t3": "block1_temp_inboard"},inplace=True)
-df.rename(columns={" t5": "block1_temp_outboard"},inplace=True)
-df.rename(columns={" t4": "block2_temp_inboard"},inplace=True)
-df.rename(columns={" t6": "block2_temp_outboard"},inplace=True)
+# rename the temps. per hardware/configuration-sept-2026.md t3/t4 are inboard and t5/t6 outboard,
+# unless the sensors are swapped, which reverses the interpolation across the channels
+# (and makes hot_block1_temp the other sensor)
+if SWAP_BLOCK1_TEMPS:
+    df.rename(columns={" t3": "block1_temp_outboard", " t5": "block1_temp_inboard"},inplace=True)
+else:
+    df.rename(columns={" t3": "block1_temp_inboard", " t5": "block1_temp_outboard"},inplace=True)
+if SWAP_BLOCK2_TEMPS:
+    df.rename(columns={" t4": "block2_temp_outboard", " t6": "block2_temp_inboard"},inplace=True)
+else:
+    df.rename(columns={" t4": "block2_temp_inboard", " t6": "block2_temp_outboard"},inplace=True)
 # take out the camelcase in the remaining variables
 df.rename(columns={" boardTemp": "boardtemp"},inplace=True)
 df.rename(columns={" boardTemp": "boardtemp"},inplace=True)
@@ -276,6 +292,8 @@ metadata = {'RAW_FILE': args.file,\
         'IMU_TEMP_MAX': IMU_TEMP_MAX,\
         'IMU_PRESS_MIN': IMU_PRESS_MIN,\
         'IMU_PRESS_MAX': IMU_PRESS_MAX,\
+        'SWAP_BLOCK1_TEMPS': SWAP_BLOCK1_TEMPS,\
+        'SWAP_BLOCK2_TEMPS': SWAP_BLOCK2_TEMPS,\
         'L0-to-L04_PROCESSING_TIME': proc_time } 
 
 try:

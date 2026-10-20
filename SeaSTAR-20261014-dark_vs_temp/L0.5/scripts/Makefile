@@ -2,12 +2,15 @@
 # add more runs separated by spaces
 RAWFILES=2026-10-14_08-49-33
 
-SCRIPTS=./L0-to-L04.py ./L04-to-L05.py
+SCRIPTS=./L0-to-L04.py ./L04-to-L05.py ./L05-heater-flags.py
 MODULES=./seastar_analysis_params.py ./seastar_analysis_utils.py ./seastar_datautils.py ./seastar_error_flags.py ./seastar_filepaths.py
 PARAMFILES=../setup/local.sh ../setup/environment.sh ../setup/parameters.sh
 
 RAW=../../raw
 PICKLE=../../pickle
+
+# the heater on/off times are taken from the notes
+NOTES=$(wildcard $(RAW)/notes_*.txt)
 
 # make runs each recipe line in its own /bin/sh, so the setup files are sourced (with . not source)
 # on the same line as the script that needs them
@@ -22,9 +25,11 @@ L04: $(L04_FILES)
 
 L05: $(L05_FILES)
 
-$(PICKLE)/SeaSTAR_%.L05: $(PICKLE)/SeaSTAR_%.L04 $(SCRIPTS) $(MODULES) $(PARAMFILES)
+$(PICKLE)/SeaSTAR_%.L05: $(PICKLE)/SeaSTAR_%.L04 $(SCRIPTS) $(MODULES) $(PARAMFILES) $(NOTES)
 	echo processing L04 to L05 $@
 	$(SETUP) ./L04-to-L05.py $(notdir $<) --outputfile $(notdir $@)
+	echo flagging heater-on times in $@
+	$(SETUP) ./L05-heater-flags.py $(notdir $@)
 
 $(PICKLE)/SeaSTAR_%.L04: $(RAW)/%_log.csv $(SCRIPTS) $(MODULES) $(PARAMFILES)
 	echo processing csv to L04 $@

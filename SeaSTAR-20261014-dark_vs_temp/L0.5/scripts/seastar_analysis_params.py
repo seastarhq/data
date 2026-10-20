@@ -21,3 +21,7 @@ IMU_TEMP_MIN = float(os.environ['IMU_TEMP_MIN'])
 IMU_TEMP_MAX = float(os.environ['IMU_TEMP_MAX'])
 IMU_PRESS_MIN = float(os.environ['IMU_PRESS_MIN'])
 IMU_PRESS_MAX = float(os.environ['IMU_PRESS_MAX'])
+
+# default to not swapped, for parameters.sh files written before these existed
+SWAP_BLOCK1_TEMPS = os.environ.get('SWAP_BLOCK1_TEMPS', '0') == '1'
+SWAP_BLOCK2_TEMPS = os.environ.get('SWAP_BLOCK2_TEMPS', '0') == '1'

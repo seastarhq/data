@@ -99,7 +99,7 @@ AUTO_CLOUD_2 = 16
 HAND_CLOUD_CIRRUS = 32  
 HAND_CLOUD_1 = 64
 HAND_CLOUD_2 = 128
-HAND_CLOUD_3 = 265
+HAND_CLOUD_3 = 256
 
 
 def calculate_tracking_flags(screeninterval,avginterval,paramsdict): #
