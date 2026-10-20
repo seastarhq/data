@@ -307,8 +307,7 @@ amplification, not whether the reverse model works.
 | `plots/dark_vs_temp_block1_tau2700_above27C.png` | block 1 lagged, τ = 2700 s, zoomed to ≥ 27 °C |
 | `plots/dark_vs_temp_block1_shift2300.png` | block 1 delayed 2300 s |
 | `plots/block1_shift_scan.png` | fit scatter against shift and against τ, 0–3600 s |
-| `plots/dark_vs_temp_unswapped.png` | same data as `dark_vs_temp.png`, from the pre-swap-flag L05 |
-| `pickle/SeaSTAR_2026-10-14_08-49-33_unswapped.L05` | copy of the L05 from before the swap flags were added. The current L05 is the same layout, so this is redundant |
+| `plots/dark_vs_temp_unswapped.png` | same layout as `dark_vs_temp.png`, plotted from the L05 made before the swap flags were added (that L05 has since been deleted) |
 
 The block-1-swapped plot was overwritten when the data was reprocessed back to the hardware-doc
 layout. Regenerate it with `SWAP_BLOCK1_TEMPS=1` and `make` if needed.

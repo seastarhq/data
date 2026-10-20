@@ -17,9 +17,14 @@ import math
 
 # tracking_error flags
 NO_CAMERA_DATA = 1
-TRACKING_ERROR_OOB = 2
+TRACKING_ERROR_OOB = 2       # the largest tracking error level, same as TRACKING_ERROR_3
 CAMERA_BRIGHTNESS_HIGH = 4
 CAMERA_BRIGHTNESS_LOW = 8
+# three levels of tracking error, set cumulatively (an error above level 3 sets all three).
+# level 3 keeps the original TRACKING_ERROR_OOB bit, so older files and code read it the same way
+TRACKING_ERROR_1 = 16        # max euclidian distance > TRACKING_EUCLIDIAN_MAX1
+TRACKING_ERROR_2 = 32        # max euclidian distance > TRACKING_EUCLIDIAN_MAX2
+TRACKING_ERROR_3 = TRACKING_ERROR_OOB  # max euclidian distance > TRACKING_EUCLIDIAN_MAX3
 
 # robot_error flags
 ENCODER_DROPOUT = 1
@@ -107,13 +112,17 @@ HEATER_ON = 1
 
 # tracking flags get set at L0 to L04
 def calculate_tracking_flags(screeninterval,avginterval,paramsdict): #
-    # params is a dict with {trackingmax,brightmin,brightmax}:
+    # params is a dict with {trackingmax1,trackingmax2,trackingmax3,brightmin,brightmax}:
     euclidian_dist_stats = screeninterval['euclidian_dist'].describe()
     camera_sun_brightness_stats = avginterval['camera_sun_brightness'].describe()
     trackingflags = 0 
-    if euclidian_dist_stats['max'] > paramsdict['trackingmax']:    
-        # we only apply the "screeninterval" time-interval for tracking
-        trackingflags = trackingflags | TRACKING_ERROR_OOB
+    # we only apply the "screeninterval" time-interval for tracking
+    if euclidian_dist_stats['max'] > paramsdict['trackingmax1']:
+        trackingflags = trackingflags | TRACKING_ERROR_1
+    if euclidian_dist_stats['max'] > paramsdict['trackingmax2']:
+        trackingflags = trackingflags | TRACKING_ERROR_2
+    if euclidian_dist_stats['max'] > paramsdict['trackingmax3']:
+        trackingflags = trackingflags | TRACKING_ERROR_3
     if camera_sun_brightness_stats['min'] == 0:   
         # i.e. the camera didnt' give data for the whole analysis interval
         trackingflags = trackingflags | NO_CAMERA_DATA

@@ -21,7 +21,7 @@ from seastar_filepaths import *
 
 # analysis parameters:
 # including 
-# SEASTAR_TIMEZONE AVG_INTERVAL ANALYSIS_MARGIN BRIGHTNESS_MIN BRIGHTNESS_MAX TRACKING_EUCLIDIAN_MAX
+# SEASTAR_TIMEZONE AVG_INTERVAL ANALYSIS_MARGIN BRIGHTNESS_MIN BRIGHTNESS_MAX TRACKING_EUCLIDIAN_MAX1 TRACKING_EUCLIDIAN_MAX2 TRACKING_EUCLIDIAN_MAX3
 # HOT_BLOCK1_MIN HOT_BLOCK1_MAX HOT_BLOCK2_MIN HOT_BLOCK2_MAX COLD_BLOCK_MIN COLD_BLOCK_MAX
 # IMU_TEMP_MIN IMU_TEMP_MAX IMU_PRESS_MIN IMU_PRESS_MAX
 from seastar_analysis_params import *
@@ -33,7 +33,8 @@ parser.add_argument('file')
 parser.add_argument('-o', '--outputfile')
 parser.add_argument('-i', '--interval', type=float)
 parser.add_argument('-m', '--margin', type=float)
-parser.add_argument('--trackerror', type=float)
+parser.add_argument('--trackerror', type=float, nargs=3, metavar=('MAX1', 'MAX2', 'MAX3'),
+                    help='the three tracking error thresholds, smallest first')
 parser.add_argument('--brightmin', type=float)
 parser.add_argument('--brightmax', type=float)
 args = parser.parse_args()
@@ -49,7 +50,7 @@ if args.margin is not None:
 else:
     analysis_margin = timedelta(seconds = ANALYSIS_MARGIN)
 if args.trackerror is not None:
-    TRACKING_EUCLIDIAN_MAX = args.trackerror
+    TRACKING_EUCLIDIAN_MAX1, TRACKING_EUCLIDIAN_MAX2, TRACKING_EUCLIDIAN_MAX3 = args.trackerror
 if args.brightmin is not None:
     BRIGHTNESS_MIN = args.brightmin
 if args.brightmax is not None:
@@ -241,7 +242,8 @@ for timestep in range(timesteps):
 #                   [4] is 100x radiometer flags
 #                   [5] is 10kx radiometer flags
 
-    trackingparams = {"trackingmax": TRACKING_EUCLIDIAN_MAX, "brightmin": BRIGHTNESS_MIN, "brightmax": BRIGHTNESS_MAX}
+    trackingparams = {"trackingmax1": TRACKING_EUCLIDIAN_MAX1, "trackingmax2": TRACKING_EUCLIDIAN_MAX2,
+                      "trackingmax3": TRACKING_EUCLIDIAN_MAX3, "brightmin": BRIGHTNESS_MIN, "brightmax": BRIGHTNESS_MAX}
     L05_2d_line['flags'][0] = calculate_tracking_flags(screeninterval,avginterval,trackingparams) # trackingflags
 
     L05_3d_array[timestep] = L05_2d_line
@@ -265,7 +267,9 @@ metadata = {'RAW_FILE': args.file,\
         'ANALYSIS_MARGIN': analysis_margin.seconds,\
         'BRIGHTNESS_MIN': BRIGHTNESS_MIN,\
         'BRIGHTNESS_MAX': BRIGHTNESS_MAX,\
-        'TRACKING_EUCLIDIAN_MAX': TRACKING_EUCLIDIAN_MAX,\
+        'TRACKING_EUCLIDIAN_MAX1': TRACKING_EUCLIDIAN_MAX1,\
+        'TRACKING_EUCLIDIAN_MAX2': TRACKING_EUCLIDIAN_MAX2,\
+        'TRACKING_EUCLIDIAN_MAX3': TRACKING_EUCLIDIAN_MAX3,\
         'HOT_BLOCK1_MIN': HOT_BLOCK1_MIN,\
         'HOT_BLOCK1_MAX': HOT_BLOCK1_MAX,\
         'HOT_BLOCK2_MIN': HOT_BLOCK2_MIN,\

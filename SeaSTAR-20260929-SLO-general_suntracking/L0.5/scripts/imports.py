@@ -21,7 +21,7 @@ seastar_timezone = pytz.timezone(SEASTAR_TIMEZONE) # we only get this from the p
 
 avg_interval = timedelta(seconds = AVG_INTERVAL)
 analysis_margin = timedelta(seconds = ANALYSIS_MARGIN)
-tracking_max = TRACKING_EUCLIDIAN_MAX
+tracking_max = TRACKING_EUCLIDIAN_MAX3
 brightmin = BRIGHTNESS_MIN
 brightmax = BRIGHTNESS_MAX
 
