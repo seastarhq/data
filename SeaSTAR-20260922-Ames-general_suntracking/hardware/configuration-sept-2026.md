@@ -6,7 +6,7 @@ Two "hot" blocks are installed, each with 5 silicon photodiode detectors. Each b
 
 ### Block 1
 
-Block 1 is logged as Ch1_1x Ch2_1x Ch3_1x Ch4_1x Ch5_1x in the csv file. Temperatures are T1 on the inboard side and T3 on the outboard side. Wavelength filters by channel are as follows:
+Block 1 is logged as Ch1_1x Ch2_1x Ch3_1x Ch4_1x Ch5_1x in the csv file. Temperatures are T3 on the inboard side and T5 on the outboard side. Wavelength filters by channel are as follows:
 
 1. 380/2 nm #4855 (inboard)
 2. 440/10 nm #3362
@@ -16,7 +16,7 @@ Block 1 is logged as Ch1_1x Ch2_1x Ch3_1x Ch4_1x Ch5_1x in the csv file. Tempera
 
 ### Block 2
 
-Block 2 is logged as Ch6_1x Ch7_1x Ch8_1x Ch9_1x Ch10_1x in the csv file. Temperatures are T2 on the inboard side and T4 on the outboard side. Wavelength filters by channel are as follows:
+Block 2 is logged as Ch6_1x Ch7_1x Ch8_1x Ch9_1x Ch10_1x in the csv file. Temperatures are T4 on the inboard side and T6 on the outboard side. Wavelength filters by channel are as follows:
 
 1. 340/2 nm # 3682 (inboard)
 2. 870/10 nm #077
