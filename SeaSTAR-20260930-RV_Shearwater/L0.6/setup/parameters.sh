@@ -45,7 +45,7 @@ TRIPLETVAR_CHANNELS="1 2 3 4 5 6 7 9 10"
 # the tracking error level (1, 2 or 3, set by TRACKING_EUCLIDIAN_MAX1/2/3 in the L0.5 parameters) at which
 # a timestep counts as badly tracked and isn't cloud-screened. no camera data and camera brightness out
 # of bounds always count as bad tracking
-TRIPLETVAR_TRACKING_LEVEL=3
+TRIPLETVAR_TRACKING_LEVEL=1
 
 
 # radiometer temperature correction, in volts per degree C, per channel (0 = no correction).
