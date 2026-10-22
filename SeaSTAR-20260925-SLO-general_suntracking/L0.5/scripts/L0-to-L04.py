@@ -263,8 +263,8 @@ metadata = {'RAW_FILE': args.file,\
         'EXTRACTED_DATA_DIR': EXTRACTED_DATA_DIR,\
         'PICKLE_DIR': PICKLE_DIR,\
         'SEASTAR_TIMEZONE': seastar_timezone.zone,\
-        'AVG_INTERVAL': avg_interval.seconds,\
-        'ANALYSIS_MARGIN': analysis_margin.seconds,\
+        'AVG_INTERVAL': avg_interval.total_seconds(),\
+        'ANALYSIS_MARGIN': analysis_margin.total_seconds(),\
         'BRIGHTNESS_MIN': BRIGHTNESS_MIN,\
         'BRIGHTNESS_MAX': BRIGHTNESS_MAX,\
         'TRACKING_EUCLIDIAN_MAX1': TRACKING_EUCLIDIAN_MAX1,\
@@ -280,6 +280,8 @@ metadata = {'RAW_FILE': args.file,\
         'IMU_TEMP_MAX': IMU_TEMP_MAX,\
         'IMU_PRESS_MIN': IMU_PRESS_MIN,\
         'IMU_PRESS_MAX': IMU_PRESS_MAX,\
+        'CHANNEL_NM': CHANNEL_NM,\
+        'CHANNEL_W': CHANNEL_W,\
         'L0-to-L04_PROCESSING_TIME': proc_time } 
 
 try:

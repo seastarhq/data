@@ -2,17 +2,24 @@
 """Match AERONET sun observations against SeaSTAR L0.6 photometer voltages.
 
 Input:
-  - AERONET pickle (output of read_aeronet.py): {"data": structured_array,
-    "metadata": {...}} with sun observations and per-wavelength voltages/AOD.
+  - AERONET data, either the temperature-corrected npz written by an AERONET
+    site's read_aeronet_tempcorr.py (keys 'array_data' and 'metadata', laid
+    out like an L0.6 file), or the older pickle written by read_aeronet.py
+    ({"data": structured_array, "metadata": {...}}).
   - One or more SeaSTAR L0.6 files (.L06), each loadable via
-    np.load(allow_pickle=True) with keys 'array_data' and 'metadata'.
+    np.load(allow_pickle=True) with keys 'array_data' and 'metadata'. The
+    channel voltages in them are already temperature corrected (by the
+    campaign's L0.6 temp_correction.py).
   - For each L0.6: a sibling channel_wavelengths.sh in the campaign's
-    L0.6/setup/ folder, defining CH1_NM..CH5_NM (blank = unmapped).
+    L0.6/setup/ folder, defining CH<n>_NM (blank = unmapped). Channels whose
+    wavelength AERONET doesn't measure (e.g. 550 nm) are skipped.
 
 Output:
   - Pickled {"data": structured_array, "metadata": {...}} of paired rows:
     one row per AERONET observation in the date range, with windowed mean
-    and std of each mapped SeaSTAR channel.
+    and std of each mapped SeaSTAR channel. Each AERONET wavelength also gets
+    the mean of its V1/V2/V3 triplet, leaving out dropouts: a triplet member
+    below --dropout-fraction times the triplet's median is not used.
   - Per-channel scatter plots (unless --no-plots).
 """
 
@@ -27,9 +34,6 @@ from pathlib import Path
 
 import numpy as np
 
-
-SEASTAR_CHANNELS = ["ch1_1x", "ch2_1x", "ch3_1x", "ch4_1x", "ch5_1x"]
-SEASTAR_CHANNEL_NUMS = [1, 2, 3, 4, 5]
 
 VALID_FLAG_FIELDS = {
     "tracking_flags", "robot_flags", "housekeeping_flags",
@@ -48,10 +52,31 @@ AERONET_WAVELENGTH_LOOKUP = {
     675:  [("V*_675",         "AOD_675")],
     870:  [("V*_870",         "AOD_870")],
     935:  [("V*_935",         None)],          # AERONET reports water vapor here, no AOD
+    # the SeaSTAR water vapour channels are 940 nm, AERONET's is 935 nm
+    940:  [("V*_935",         None)],
     1020: [("V*_1020",        "AOD_1020"),
            ("V*_1020_InGaAs", "AOD_1020_InGaAs")],
     1640: [("V*_1640",        "AOD_1640")],
 }
+
+
+def triplet_field(v_stem, what):
+    """The output field for a triplet statistic, e.g. V*_500 -> aeronet_Vmean_500."""
+    return f"aeronet_{v_stem.replace('*', what)}"
+
+
+def triplet_mean(row, v_stem, dropout_fraction):
+    """Mean of the V1/V2/V3 triplet, leaving out dropouts. Returns (mean, n_used).
+
+    A member is a dropout if it is missing, not positive, or below
+    dropout_fraction times the median of the triplet's good members.
+    """
+    v = np.array([row[v_stem.replace("*", str(n))] for n in (1, 2, 3)], dtype=float)
+    good = np.isfinite(v) & (v > 0)
+    if not good.any():
+        return np.nan, 0
+    good &= v >= dropout_fraction * np.median(v[good])
+    return float(v[good].mean()), int(good.sum())
 
 
 def parse_iso_utc(s):
@@ -76,7 +101,7 @@ def parse_channel_wavelengths(path):
     Channels with blank values are omitted from the dict.
     """
     mapping = {}
-    pattern = re.compile(r"^\s*CH([1-5])_NM\s*=\s*([^#\s]*)\s*(#.*)?$")
+    pattern = re.compile(r"^\s*CH([0-9]+)_NM\s*=\s*([^#\s]*)\s*(#.*)?$")
     with open(path) as fh:
         for line in fh:
             m = pattern.match(line)
@@ -117,8 +142,18 @@ def load_l06(path):
 
 
 def load_aeronet(path):
+    """Load AERONET data as {"data": structured_array, "metadata": dict}, from
+    either a temperature-corrected npz or an older read_aeronet.py pickle."""
+    if str(path).endswith(".npz"):
+        npz = np.load(path, allow_pickle=True)
+        return {"data": npz["array_data"], "metadata": npz["metadata"][()]}
     with open(path, "rb") as fh:
         return pickle.load(fh)
+
+
+def aeronet_filter_type(meta):
+    """The observation type the AERONET data was filtered to, in either metadata layout."""
+    return meta.get("FILTER_TYPE", meta.get("filters_applied", {}).get("type"))
 
 
 def build_output_dtype(channel_map):
@@ -135,6 +170,13 @@ def build_output_dtype(channel_map):
         # Carry full AERONET V/AOD payload through (one row per match)
         ("aeronet_aod_missing_flags", "i4"),
     ]
+    # the dropout-screened triplet mean of each AERONET wavelength, and how many members it used
+    triplet_stems = []
+    for ch_num, wl, _src in channel_map:
+        for v_stem, _aod in AERONET_WAVELENGTH_LOOKUP[wl]:
+            if v_stem not in triplet_stems:
+                triplet_stems.append(v_stem)
+                fields += [(triplet_field(v_stem, "mean"), "f8"), (triplet_field(v_stem, "n"), "i4")]
     # AERONET V*_<wl> and AOD_<wl> for the wavelengths actually mapped:
     aeronet_fields_added = set()
     for ch_num, wl, _src in channel_map:
@@ -159,7 +201,7 @@ def build_output_dtype(channel_map):
         ]
 
     fields.append(("seastar_source", "U64"))
-    return np.dtype(fields), aeronet_fields_added
+    return np.dtype(fields), aeronet_fields_added, triplet_stems
 
 
 def build_drop_mask(l06, drop_fields):
@@ -179,8 +221,12 @@ def match_window(aeronet_dt_ns, l06_dt_ns, half_width_ns):
 
 def main():
     p = argparse.ArgumentParser(description=__doc__)
-    p.add_argument("--aeronet-pickle", required=True,
-                   help="Path to the AERONET pickle (output of read_aeronet.py).")
+    p.add_argument("--aeronet", "--aeronet-pickle", dest="aeronet", required=True,
+                   help=("Path to the AERONET data: a temperature-corrected npz "
+                         "(read_aeronet_tempcorr.py) or a read_aeronet.py pickle."))
+    p.add_argument("--dropout-fraction", type=float, default=0.8,
+                   help=("AERONET triplet members below this fraction of the triplet's "
+                         "median are dropouts and left out of its mean (default: 0.8)."))
     p.add_argument("--seastar-l06", action="append", required=True,
                    help="Path to a SeaSTAR .L06 file. Repeatable.")
     p.add_argument("--start", type=parse_iso_utc, default=None,
@@ -206,12 +252,12 @@ def main():
         sys.exit(f"unknown flag field(s): {bad}. Valid: {sorted(VALID_FLAG_FIELDS)}")
 
     # 1. Load AERONET.
-    aeronet = load_aeronet(args.aeronet_pickle)
+    aeronet = load_aeronet(args.aeronet)
     aeronet_data = aeronet["data"]
     aeronet_meta = aeronet["metadata"]
-    if aeronet_meta.get("filters_applied", {}).get("type") not in ("sun", "both"):
-        print(f"warning: AERONET pickle filtered to type="
-              f"{aeronet_meta.get('filters_applied',{}).get('type')!r}; expected 'sun' "
+    if aeronet_filter_type(aeronet_meta) not in ("sun", "both"):
+        print(f"warning: AERONET data filtered to type="
+              f"{aeronet_filter_type(aeronet_meta)!r}; expected 'sun' "
               f"for calibration. Continuing anyway.", file=sys.stderr)
 
     # 2. Load each L0.6 + its channel map; concatenate all into one big block.
@@ -229,8 +275,9 @@ def main():
         unknown_wl = [(c, w) for c, w in ch_map.items()
                       if w not in AERONET_WAVELENGTH_LOOKUP]
         if unknown_wl:
-            sys.exit(f"{cw_path}: wavelengths {unknown_wl} have no AERONET match. "
-                     f"Valid: {sorted(AERONET_WAVELENGTH_LOOKUP)}")
+            print(f"note: {cw_path}: channels {unknown_wl} have no AERONET wavelength, "
+                  f"skipping them", file=sys.stderr)
+            ch_map = {c: w for c, w in ch_map.items() if w in AERONET_WAVELENGTH_LOOKUP}
         l06_blocks.append(arr)
         channel_map_per_block.append((l06_path, ch_map))
         sources.append(os.path.basename(l06_path))
@@ -285,7 +332,7 @@ def main():
     # Resolve label for each entry; ch_map_full has (ch_num, wl, src_label)
     ch_map_full = [(ch, wl, f"ch{ch}_{wl}nm") for ch, wl in channel_map_list]
 
-    out_dtype, aeronet_fields_added = build_output_dtype(ch_map_full)
+    out_dtype, aeronet_fields_added, triplet_stems = build_output_dtype(ch_map_full)
     out = np.empty(len(a), dtype=out_dtype)
 
     # 7. Pre-compute drop mask on L0.6.
@@ -308,6 +355,10 @@ def main():
 
         for f in aeronet_fields_added:
             out[i][f"aeronet_{f}"] = row[f]
+        for v_stem in triplet_stems:
+            mean, n = triplet_mean(row, v_stem, args.dropout_fraction)
+            out[i][triplet_field(v_stem, "mean")] = mean
+            out[i][triplet_field(v_stem, "n")] = n
 
         lo, hi = match_window(aeronet_dt_ns, l06_t_ns, half_width_ns)
         n_total = hi - lo
@@ -333,7 +384,9 @@ def main():
 
     # 9. Metadata + write.
     metadata = {
-        "aeronet_pickle": os.path.abspath(args.aeronet_pickle),
+        "aeronet_file": os.path.abspath(args.aeronet),
+        "aeronet_site": aeronet_meta.get("SITE"),
+        "aeronet_dropout_fraction": args.dropout_fraction,
         "seastar_l06_files": [os.path.abspath(p) for p in args.seastar_l06],
         "channel_wavelengths": canonical_map,
         "window_seconds": args.window_seconds,
@@ -341,8 +394,10 @@ def main():
         "date_range_utc": [str(t_start), str(t_end)],
         "n_matches": int(len(out)),
         "n_with_l06_samples": int(np.sum(out[f"seastar_ch{ch_map_full[0][0]}_{ch_map_full[0][1]}nm_n_used"] > 0)),
-        "aeronet_calibration": aeronet_meta.get("calibration"),
-        "aeronet_filters_applied": aeronet_meta.get("filters_applied"),
+        "aeronet_calibration": aeronet_meta.get("calibration", aeronet_meta.get("TEMP_CORR_FILE")),
+        "aeronet_filters_applied": aeronet_meta.get("filters_applied",
+                                                    {"type": aeronet_meta.get("FILTER_TYPE"),
+                                                     "level": aeronet_meta.get("FILTER_LEVEL")}),
     }
 
     Path(args.output).parent.mkdir(parents=True, exist_ok=True)
@@ -364,8 +419,8 @@ def main():
         Path(args.plots_dir).mkdir(parents=True, exist_ok=True)
         for ch_num, wl, src_label in ch_map_full:
             for v_stem, aod_field in AERONET_WAVELENGTH_LOOKUP[wl]:
-                # Use V1 as the AERONET voltage (V1/V2/V3 are the triplet)
-                v_field = f"aeronet_{v_stem.replace('*', '1')}"
+                # the dropout-screened mean of the V1/V2/V3 triplet
+                v_field = triplet_field(v_stem, "mean")
                 ch_mean = out[f"seastar_{src_label}_mean"]
                 v_aer = out[v_field]
                 airmass = out["aeronet_airmass"]
@@ -374,7 +429,7 @@ def main():
                     continue
                 fig, ax = plt.subplots(figsize=(6, 5))
                 sc = ax.scatter(v_aer[ok], ch_mean[ok], c=airmass[ok], s=20)
-                ax.set_xlabel(f"AERONET {v_stem.replace('*','1')}")
+                ax.set_xlabel(f"AERONET {v_stem.replace('*','mean')}")
                 ax.set_ylabel(f"SeaSTAR ch{ch_num} mean (counts)")
                 ax.set_title(f"ch{ch_num} ({wl} nm) vs AERONET {v_stem}")
                 cb = fig.colorbar(sc, ax=ax)

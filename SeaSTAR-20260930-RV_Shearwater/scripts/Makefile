@@ -19,9 +19,9 @@
 #   make show       what make thinks it is working on
 #   make clean      throw away the plots
 #
-# the python in the venv at the top of the tree, which has pandas, matplotlib
+# the python in the venv at the top of the data tree, which has pandas, matplotlib
 # and cartopy, unless told otherwise:
-PYTHON ?= $(abspath ../../../bin/python)
+PYTHON ?= $(abspath ../../.venv/bin/python)
 
 RAW_DIR = ../raw
 PLOTS_DIR = ../plots

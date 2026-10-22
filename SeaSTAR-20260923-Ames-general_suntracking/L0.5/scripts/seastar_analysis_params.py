@@ -23,3 +23,9 @@ IMU_TEMP_MIN = float(os.environ['IMU_TEMP_MIN'])
 IMU_TEMP_MAX = float(os.environ['IMU_TEMP_MAX'])
 IMU_PRESS_MIN = float(os.environ['IMU_PRESS_MIN'])
 IMU_PRESS_MAX = float(os.environ['IMU_PRESS_MAX'])
+
+# channel central wavelengths and bandwidths in nm, from channel_wavelengths.sh
+# a channel left blank (unused) is None
+NUM_CHANNELS = 10
+CHANNEL_NM = [float(os.environ[f'CH{n}_NM']) if os.environ.get(f'CH{n}_NM') else None for n in range(1, NUM_CHANNELS+1)]
+CHANNEL_W = [float(os.environ[f'CH{n}_W']) if os.environ.get(f'CH{n}_W') else None for n in range(1, NUM_CHANNELS+1)]

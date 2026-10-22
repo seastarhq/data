@@ -47,8 +47,8 @@ The data in `pickle/` is processed with the hardware-doc layout (no swap).
 
 ## Plotting
 
-All scripts run from `dark_v_temp/` with the seastarhq venv active
-(`. /home/steve/nothing/seastar/seastarhq/bin/activate`; system Python lacks `pytz`).
+All scripts run from `dark_v_temp/` with the data venv active
+(`. /home/steve/nothing/seastar/seastarhq/data/.venv/bin/activate`; system Python lacks `pytz`).
 
 `plot_dark_vs_temp.py [L05 file] [-o png]` plots dark voltage against temperature for all ten
 channels: block 1 (ch1–5) on the top row, block 2 (ch6–10) on the bottom.

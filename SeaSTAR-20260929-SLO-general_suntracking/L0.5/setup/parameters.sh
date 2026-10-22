@@ -20,7 +20,7 @@ BRIGHTNESS_MIN=35
 BRIGHTNESS_MAX=245
 # three levels of tracking error (max euclidian distance over the screen interval), each with its own
 # flag bit. the flags are cumulative: an error above MAX3 also sets the MAX1 and MAX2 bits
-TRACKING_EUCLIDIAN_MAX1=0.02
+TRACKING_EUCLIDIAN_MAX1=0.010
 TRACKING_EUCLIDIAN_MAX2=0.025
 TRACKING_EUCLIDIAN_MAX3=0.05
 
