@@ -2,10 +2,9 @@
 
 import sys, os
 import numpy as np
-import math
 import argparse
 import pytz
-from scipy.signal import *
+from datetime import datetime
 
 # custom seastar modules
 import seastar_datautils
@@ -17,54 +16,51 @@ from seastar_analysis_utils import *
 from seastar_filepaths import *
 
 ## analysis parameters:
-# including 
-# SEASTAR_TIMEZONE AVG_INTERVAL ANALYSIS_MARGIN BRIGHTNESS_MIN BRIGHTNESS_MAX TRACKING_EUCLIDIAN_MAX
-# HOT_BLOCK1_MIN HOT_BLOCK1_MAX HOT_BLOCK2_MIN HOT_BLOCK2_MAX COLD_BLOCK_MIN COLD_BLOCK_MAX
-# IMU_TEMP_MIN IMU_TEMP_MAX IMU_PRESS_MIN IMU_PRESS_MAX
-# TRIPLETVAR_TOLERANCE_PERCENT TEMP_CORR_BASELINE TEMP_CORR_SCALEFACTORS
+# including
+# TEMP_CORR_ORDER TEMP_CORR_TREF TEMP_CORR_COEFFS
 from seastar_analysis_params import *
+
+# temperature corrects the dark-subtracted voltages (from dark_subtraction.py) with AERONET's form,
+#     ch<n>_1x_darksub_<dark>_tc = ch<n>_1x_darksub_<dark> / (1 + A*dT)              TEMP_CORR_ORDER=lin
+#     ch<n>_1x_darksub_<dark>_tc = ch<n>_1x_darksub_<dark> / (1 + A*dT + B*dT^2)     TEMP_CORR_ORDER=quad
+# with dT = ch<n>_temp - TEMP_CORR_TREF, and A and B fitted against AERONET for each dark-subtracted voltage
+# by calibration_vs_ref (fit_tempcorr.py, written into parameters.sh by write_tempcorr_params.py).
+# the uncorrected fields are left as they are, so the AERONET matching can refit from them.
+# a channel temperature of exactly 0 is the sensors' startup zeros, so the corrected fields are NaN there.
 
 parser = argparse.ArgumentParser()
 parser.add_argument('file')
-parser.add_argument('--temp_corr_baseline', type=float)
-parser.add_argument('--temp_corr_scalefactor', type=float,
-                    help='use this scale factor for every channel, instead of the per-channel ones')
+parser.add_argument('--order', choices=('lin', 'quad'),
+                    help='use the linear or quadratic coefficients, instead of TEMP_CORR_ORDER')
 args = parser.parse_args()
 
 CHANNELS = range(1, 11)  # ch1-5 are block 1, ch6-10 are block 2
+DARKS = ('darksub_lin', 'darksub_quad')
 
-# get analysis parameters from command line arguments, by overriding what's read in in the import above
-# or default to values set in environment variables
-#if args.triplet_tol is not None:
-#    TRIPLET_TOLERANCE = args.triplet_tol
-if args.temp_corr_baseline is not None:
-    TEMP_CORR_BASELINE = args.temp_corr_baseline
-if args.temp_corr_scalefactor is not None:
-    TEMP_CORR_SCALEFACTORS = {ch: args.temp_corr_scalefactor for ch in CHANNELS}
+if args.order is not None:
+    TEMP_CORR_ORDER = args.order
+if TEMP_CORR_ORDER not in ('lin', 'quad'):
+    sys.exit(f"TEMP_CORR_ORDER must be lin or quad, not {TEMP_CORR_ORDER!r}")
 
 # findFile needs a list passed to it, so we make one with length 1
 L06_data_dir = [L06_DATA_DIR,]
 L06_npyfile = seastar_datautils.findFile(args.file, L06_data_dir)
-sys.stderr.write(L06_npyfile)
-L06_file_date = os.path.splitext(os.path.basename(L06_npyfile))[0].split("_")[1]
-L06_file_time = os.path.splitext(os.path.basename(L06_npyfile))[0].split("_")[2]
-# for later re-saving:
-
-#print(f"\n\n{L06_file_date} {L06_file_time}\n\n")
 
 L06_data = np.load(L06_npyfile, allow_pickle=True)
 metadata = L06_data['metadata'][()]
 L06_data = L06_data['array_data']
 
-# do the correction for each channel, using that channel's (interpolated) temperature.
-# a scale factor of zero leaves the channel uncorrected
+temp_corr_metadata = {'TEMP_CORR_ORDER': TEMP_CORR_ORDER, 'TEMP_CORR_TREF': TEMP_CORR_TREF}
 for ch in CHANNELS:
-    correction = TEMP_CORR_SCALEFACTORS[ch] * (L06_data[f'ch{ch}_temp'] - TEMP_CORR_BASELINE)
-    L06_data[f'ch{ch}_1x'] = L06_data[f'ch{ch}_1x'] - correction
+    temp = np.where(L06_data[f'ch{ch}_temp'] == 0.0, np.nan, L06_data[f'ch{ch}_temp'])
+    dT = temp - TEMP_CORR_TREF
+    for dark in DARKS:
+        A, B = TEMP_CORR_COEFFS[dark][TEMP_CORR_ORDER][ch]
+        L06_data[f'ch{ch}_1x_{dark}_tc'] = L06_data[f'ch{ch}_1x_{dark}'] / (1.0 + A * dT + B * dT ** 2)
+        temp_corr_metadata[f'TEMP_CORR_{dark.upper()}_A_CH{ch}'] = A
+        temp_corr_metadata[f'TEMP_CORR_{dark.upper()}_B_CH{ch}'] = B
 
-        
-temp_corr_metadata = {'TEMP_CORR_BASELINE': TEMP_CORR_BASELINE}
-temp_corr_metadata.update({f'TEMP_CORR_SCALEFACTOR_CH{ch}': TEMP_CORR_SCALEFACTORS[ch] for ch in CHANNELS})
+temp_corr_metadata['LAST_PROCESSING_TIME'] = datetime.now(pytz.utc).isoformat()
 metadata.update(temp_corr_metadata)
 
 try:

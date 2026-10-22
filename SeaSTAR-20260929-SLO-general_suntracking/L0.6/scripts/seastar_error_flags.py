@@ -49,6 +49,7 @@ HAMB_TEMP_OOB  = 4096
 HUMIDITY_HIGH = 8192
 DTDT_ERROR1 = 16384   # dtemp/dtime - indicates heater is on which affects the radiometers
 DTDT_ERROR2 = 32768  #  
+CHANNEL_TEMP_LOW = 65536  # any channel temperature below CHANNEL_TEMP_MIN (set at L0.6 by channel_temp_screen.py)
 
 
 # radiometer_1x_error flags

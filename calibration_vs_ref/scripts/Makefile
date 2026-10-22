@@ -1,9 +1,12 @@
 # match the AERONET sun observations against the SeaSTAR L0.6 voltages, one AERONET site at a
-# time, and plot the matches.
+# time, plot the matches, and fit temperature-correction coefficients to them.
 #
-#   make                 the matched pickles and their plots, if they are out of date
+#   make                 the matched pickles, their plots and the fits, if they are out of date
 #   make matched         just the matched pickles
 #   make plots           just the plots
+#   make tempcorr        just the temperature-correction fits (../fits/tempcorr_<site>.txt and plots)
+#   make response        just the SeaSTAR-against-AERONET voltage plots, coloured by temperature, without
+#                        and with the residual- and scatter-method temperature corrections from the fits
 #   make AERONET_MONTH=202610
 #                        another month's AERONET data
 #   make show            what make thinks it is working on
@@ -16,11 +19,14 @@
 ROOT=../..
 PICKLE=../pickle
 PLOTS=../plots
+FITS=../fits
 SETUPFILES=../setup/local.sh ../setup/environment.sh ../setup/parameters.sh
 SETUP=. ../setup/local.sh; . ../setup/environment.sh; . ../setup/parameters.sh;
 
 MATCH_SCRIPT=./match_aeronet_seastar.py
 PLOT_SCRIPT=./plot_matched.py
+FIT_SCRIPT=./fit_tempcorr.py
+RESPONSE_SCRIPT=./plot_response.py
 
 AERONET_MONTH ?= 202609
 
@@ -42,11 +48,18 @@ MATCHED=$(SITES:%=$(PICKLE)/matched_%.pkl)
 # the plots are named after the days in the data, so each site's are tracked by a stamp
 PLOT_STAMPS=$(SITES:%=$(PLOTS)/.matched_%.stamp)
 
-all: matched plots
+TEMPCORR=$(SITES:%=$(FITS)/tempcorr_%.txt)
+RESPONSE=$(SITES:%=$(PLOTS)/response_%.png)
+
+all: matched plots tempcorr response
 
 matched: $(MATCHED)
 
 plots: $(PLOT_STAMPS)
+
+tempcorr: $(TEMPCORR)
+
+response: $(RESPONSE)
 
 .SECONDEXPANSION:
 $(PICKLE)/matched_%.pkl: $$($$*_AERONET) $$(call site_l06,$$*) $(MATCH_SCRIPT) $(SETUPFILES)
@@ -57,6 +70,7 @@ $(PICKLE)/matched_%.pkl: $$($$*_AERONET) $$(call site_l06,$$*) $(MATCH_SCRIPT) $
 		$${START:+--start $$START} $${END:+--end $$END} \
 		--window-seconds "$$WINDOW_SECONDS" \
 		--drop-on-flags "$$DROP_ON_FLAGS" \
+		--drop-on-bits "$$DROP_ON_BITS" \
 		--dropout-fraction "$$AERONET_DROPOUT_FRACTION" \
 		--no-plots -o $@
 
@@ -65,10 +79,18 @@ $(PLOTS)/.matched_%.stamp: $(PICKLE)/matched_%.pkl $(PLOT_SCRIPT) $(MATCH_SCRIPT
 	$(SETUP) $(PLOT_SCRIPT) $< --outdir $(PLOTS) --timezone "$$SEASTAR_TIMEZONE"
 	@touch $@
 
+$(FITS)/tempcorr_%.txt: $(PICKLE)/matched_%.pkl $(FIT_SCRIPT) $(PLOT_SCRIPT) $(MATCH_SCRIPT) $(SETUPFILES)
+	$(SETUP) $(FIT_SCRIPT) $< --tref "$$TEMPCORR_TREF" --min-points "$$TEMPCORR_MIN_POINTS" \
+		--outdir $(FITS) --plotdir $(PLOTS)
+
+$(PLOTS)/response_%.png: $(PICKLE)/matched_%.pkl $(FITS)/tempcorr_%.txt $(RESPONSE_SCRIPT) $(FIT_SCRIPT) $(PLOT_SCRIPT) $(MATCH_SCRIPT) $(SETUPFILES)
+	mkdir -p $(PLOTS)
+	$(SETUP) $(RESPONSE_SCRIPT) $< --coeffs $(FITS)/tempcorr_$*.txt --method residual scatter --outdir $(PLOTS)
+
 clean:
-	rm -f $(MATCHED) $(PLOT_STAMPS) $(PLOTS)/matched_*.png
+	rm -f $(MATCHED) $(PLOT_STAMPS) $(PLOTS)/matched_*.png $(TEMPCORR) $(PLOTS)/tempcorr_*.png $(PLOTS)/response_*.png
 
 show:
 	@$(foreach s,$(SITES),echo "$(s): $($(s)_AERONET)"; echo "  $(call site_l06,$(s))";)
 
-.PHONY: all matched plots clean show
+.PHONY: all matched plots tempcorr response clean show
