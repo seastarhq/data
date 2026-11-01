@@ -8,6 +8,7 @@ Makefile~
 *.L04
 *.L05
 *.L06
+*.L10
 *.ps
 *.pdf
 *.pyc

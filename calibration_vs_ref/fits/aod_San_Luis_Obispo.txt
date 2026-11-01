@@ -1,0 +1,25 @@
+# San_Luis_Obispo: SeaSTAR L1.0 AOD (unflagged, mean within ±15 s) against AERONET AOD (plot_aod_vs_aeronet.py)
+# ../../AERONET-SLO/202609/San_Luis_Obispo_608_raw_and_aod_tempcorr.npz
+# these are the V0 transfer days, so this checks the processing chain, not the calibration
+# site             day        V0 mode      nm    n  AERONET  SeaSTAR  med diff rms diff
+  San_Luis_Obispo  2026-09-24 intercept   340   62   0.1157   0.1086   -0.0112   0.0123
+  San_Luis_Obispo  2026-09-24 intercept   380   62   0.1118   0.1206   +0.0069   0.0072
+  San_Luis_Obispo  2026-09-24 intercept   440   62   0.0940   0.0879   -0.0057   0.0062
+  San_Luis_Obispo  2026-09-24 intercept   500   62   0.0815   0.0747   -0.0063   0.0066
+  San_Luis_Obispo  2026-09-24 intercept   675   62   0.0581   0.0559   -0.0030   0.0041
+  San_Luis_Obispo  2026-09-24 intercept   870   62   0.0524   0.0515   -0.0016   0.0030
+  San_Luis_Obispo  2026-09-24 intercept  1020   62   0.0466   0.0583   +0.0099   0.0099
+  San_Luis_Obispo  2026-09-25 intercept   340   39   0.0766   0.0625   -0.0160   0.0152
+  San_Luis_Obispo  2026-09-25 intercept   380   39   0.0763   0.0836   +0.0046   0.0085
+  San_Luis_Obispo  2026-09-25 intercept   440   39   0.0624   0.0695   +0.0058   0.0095
+  San_Luis_Obispo  2026-09-25 intercept   500   39   0.0531   0.0574   +0.0034   0.0061
+  San_Luis_Obispo  2026-09-25 intercept   675   39   0.0363   0.0389   +0.0022   0.0046
+  San_Luis_Obispo  2026-09-25 intercept   870   39   0.0329   0.0350   +0.0024   0.0044
+  San_Luis_Obispo  2026-09-25 intercept  1020   39   0.0282   0.0459   +0.0183   0.0207
+  San_Luis_Obispo  2026-09-29 intercept   340   28   0.0762   0.0647   -0.0114   0.0123
+  San_Luis_Obispo  2026-09-29 intercept   380   28   0.0759   0.0831   +0.0080   0.0075
+  San_Luis_Obispo  2026-09-29 intercept   440   28   0.0621   0.0612   -0.0012   0.0014
+  San_Luis_Obispo  2026-09-29 intercept   500   28   0.0527   0.0523   -0.0007   0.0016
+  San_Luis_Obispo  2026-09-29 intercept   675   28   0.0379   0.0388   -0.0007   0.0019
+  San_Luis_Obispo  2026-09-29 intercept   870   28   0.0356   0.0361   +0.0001   0.0018
+  San_Luis_Obispo  2026-09-29 intercept  1020   28   0.0305   0.0351   +0.0032   0.0051

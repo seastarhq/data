@@ -35,5 +35,11 @@ SEASTAR_TIMEZONE="US/Pacific"
 TEMPCORR_TREF=30
 TEMPCORR_MIN_POINTS=10
 
+# AERONET AOD closure (aeronet_aod_closure.py): each site's surface pressure in hPa, for the Rayleigh optical depth.
+# AERONET uses the day's NCEP pressure, which isn't in the export, so these are standard-atmosphere guesses for
+# the sites' heights. a 1% error moves the AOD by about 0.007 at 340 nm
+AERONET_PRESSURE_NASA_Ames=1012
+AERONET_PRESSURE_San_Luis_Obispo=1005
+
 export WINDOW_SECONDS START END DROP_ON_FLAGS DROP_ON_BITS AERONET_DROPOUT_FRACTION SEASTAR_TIMEZONE
 export TEMPCORR_TREF TEMPCORR_MIN_POINTS

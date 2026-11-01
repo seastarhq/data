@@ -1,0 +1,13 @@
+# NASA_Ames: the L1.0 AOD calculation (SeaSTAR-20260930-RV_Shearwater) on AERONET's voltages and V0s (aeronet_aod_closure.py)
+# ../../AERONET-NASA_Ames/202609/NASA_Ames_905_raw_and_aod_tempcorr.npz
+# V0 from /home/steve/nothing/seastar/seastarhq/data/AERONET-NASA_Ames/202609/calibrs_for_905.txt
+# pressure 1012 hPa, ozone 300 DU, NO2 0.1 DU, 172 sun observations, 2026-09-21T18:47 to 2026-09-24T01:18 UTC
+# diff = mine - AERONET. slope is d(diff)/d(aerosol airmass); airmass 1.25-6.78
+#    nm     n AERONET AOD   tau_R  tau_O3 tau_NO2 median diff               iqr    slope
+    340   161      0.1219  0.7116  0.0073  0.0012     -0.0050  -0.0052.. -0.0046  -0.0002
+    380   171      0.1182  0.4456  0.0000  0.0013     +0.0051  +0.0050.. +0.0053  -0.0001
+    440   172      0.0958  0.2423  0.0008  0.0015     +0.0017  +0.0015.. +0.0018  -0.0000
+    500   172      0.0798  0.1432  0.0105  0.0007     -0.0004  -0.0005.. -0.0003  +0.0000
+    675   172      0.0516  0.0422  0.0133  0.0000     -0.0015  -0.0016.. -0.0015  +0.0000
+    870   172      0.0375  0.0151  0.0003  0.0000     -0.0002  -0.0003.. -0.0002  +0.0000
+   1020   172      0.0299  0.0080  0.0000  0.0000     +0.0024  +0.0016.. +0.0039  -0.0003

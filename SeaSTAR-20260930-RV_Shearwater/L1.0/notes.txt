@@ -1,0 +1,334 @@
+SeaSTAR-20260930-RV_Shearwater L1.0 -- aerosol optical depth, processing notes
+Written 2026-10-27
+
+
+Set up L1.0 for 20260930 and wrote L06-to-L10_sun.py. `make` in L1.0/scripts writes
+pickle/SeaSTAR_<run>.L10 for all four runs. The unflagged data cover 20:37-22:38 UTC
+(13:37-15:38 local), all from the 09-32-14 run.
+
+
+1. WHAT'S IN L1.0
+
+- Copied from L0.6: local.sh, channel_wavelengths.sh and the shared modules. environment.sh is
+  adapted, with a new L10_DATA_DIR.
+- seastar_error_flags.py gains the AOD_* flag bits.
+- New parameters.sh: pressure fallback, tracking level, O3 300 DU, NO2 0.1 DU, the
+  cross-sections and the layer heights.
+- calibration.sh is written by the new calibration_vs_ref/scripts/write_v0_params.py. It holds
+  the intercept V0s, the intercept a, and the scatter-quad temperature coefficients (mean of the
+  two sites).
+- calibration_vs_ref/scripts/transfer_v0.py now also writes the intercept a.
+- New seastar_atmosphere.py: solar position, airmasses, Rayleigh, and gas optical depths.
+
+
+2. HOW THE AOD IS CALCULATED
+
+- The voltage is darksub_quad, temperature-corrected the same way the V0 was transferred.
+- The calibration step is ln((V0 - a) / (d^2 * (|V| - a))).
+- Rayleigh uses Bodhaine (1999) with the IMU pressure.
+- Each constituent has its own airmass: Kasten & Young (1989) for Rayleigh, Kasten (1966) for
+  aerosol, Komhyr (1989) for O3 and NO2.
+- Solar position and earth-sun distance are computed from time and GPS position (GPS dropouts
+  interpolated in time). The firmware elevation agrees to 0.004 degrees.
+- The Angstrom exponent is fitted over 440-870 nm.
+- Every timestep gets an AOD; aod_flags marks the ones to distrust.
+- The .L10 files carry the L0.6 fields plus the intermediate terms, so any step can be rechecked.
+
+
+3. RESULTS (09-32-14 run, 332 unflagged timesteps, medians)
+
+    nm     340    380    440    500    675    870    1020   Angstrom
+    AOD    0.138  0.150  0.126  0.122  0.104  0.099  0.101  0.37
+
+- The other three runs have no unflagged timesteps. Every timestep is cloud-flagged, below
+  CHANNEL_TEMP_MIN and has |V| <= a in at least one channel, which fits the field notes. Only
+  332 of the 22,026 timesteps in the 09-32-14 run pass everything; cloud flags alone hit 21,689.
+- The gas and Rayleigh terms check out against AERONET. Running the same algorithm on AERONET's
+  raw voltages and V0s reproduces AERONET's AOD within +-0.006 at 340-870 nm at both sites. At
+  1020 nm it is +0.002 at Ames and +0.017 at SLO; those offsets come from AERONET's 1020 data and
+  don't involve SeaSTAR. The ozone and NO2 cross-sections are approximate values; this test is
+  what shows they're adequate.
+
+
+4. CAVEATS
+
+- Most channels are very sensitive to the calibration. For ch2, 3, 5, 7 and 10, V0 - a is only
+  about 0.3-0.6 V, so small errors in a or V0 turn into significant AOD errors, at fixed airmass
+  mostly as a constant offset. The flat spectrum and the odd 340 < 380 ordering may come from
+  this rather than from the air. Comparing with the 10:45 local Microtops reading would be the
+  obvious test, but 10:45 falls in flagged data.
+- The calibration is copied, not linked. write_v0_params.py has no make rule, same as
+  write_tempcorr_params.py, so rerun it whenever v0_seastar.txt changes:
+      cd calibration_vs_ref/scripts
+      ./write_v0_params.py ../../SeaSTAR-20260930-RV_Shearwater/L1.0/setup/calibration.sh \
+          ../fits/v0_seastar.txt ../fits/tempcorr_NASA_Ames.txt ../fits/tempcorr_San_Luis_Obispo.txt
+
+
+5. AERONET CLOSURE CHECK (calibration_vs_ref/scripts/aeronet_aod_closure.py, `make closure`)
+
+Runs the L1.0 AOD calculation on each site's AERONET voltages and V0s and compares the result with
+AERONET's own AOD.
+
+What it tests:
+- It imports the campaign's own L1.0/scripts/seastar_atmosphere.py.
+- It takes the ozone and NO2 columns, cross-sections, layer heights and channel wavelengths from
+  that campaign's L1.0/setup, so it checks what L1.0 actually runs, not a copy.
+- The campaign defaults to L10_CAMPAIGN=SeaSTAR-20260930-RV_Shearwater and can be changed on the
+  make line.
+- It screens dropouts from the V1/V2/V3 triplets the same way match_aeronet_seastar.py does, and
+  reads V0 from the calibration file the npz records.
+- Only the gas and Rayleigh terms and the airmasses are tested. SeaSTAR's calibration and
+  temperature correction are not.
+
+Outputs:
+- calibration_vs_ref/fits/closure_<site>.txt: for each wavelength, the median difference
+  (mine - AERONET), its interquartile range, the Rayleigh, O3 and NO2 optical depths used, and
+  the slope of the difference against airmass.
+- calibration_vs_ref/plots/closure_<site>.png: the differences against airmass.
+
+Results (median mine - AERONET):
+
+    nm          340      380      440      500      675      870      1020
+    NASA_Ames  -0.0050  +0.0051  +0.0017  -0.0004  -0.0015  -0.0002  +0.0024
+    SLO        -0.0010  +0.0045  +0.0023  -0.0057  -0.0029  +0.0000  +0.0168
+
+The site pressures are guesses. They're in calibration_vs_ref/setup/parameters.sh as
+AERONET_PRESSURE_NASA_Ames=1012 and AERONET_PRESSURE_San_Luis_Obispo=1005. AERONET uses the day's
+NCEP pressure, which isn't in the export. A 1% error in pressure shifts the 340 nm AOD by about
+0.007. Replace them if the sites' heights or the actual pressures are known.
+
+What the plot shows: the differences fall on a separate curve for each day, shaped like a constant
+divided by the airmass. That is the signature of a fixed offset in ln(V) for the day, a different
+V0 or temperature correction, not an error in the gas terms. AERONET interpolates its V0 in time
+between calibrations, and the export doesn't show the value it used. This probably explains most of
+the residuals, including the +0.017 at 1020 nm at SLO, where the Si detector is the most
+temperature-sensitive. The slope column in the table is a straight-line fit, so it doesn't capture
+that 1/airmass shape well; the plot is the better diagnostic.
+
+
+6. L1.0 ON THE 20260922-20260929 CAMPAIGNS, AGAINST AERONET
+   (calibration_vs_ref/scripts/plot_aod_vs_aeronet.py, `make aod`; added 2026-10-27)
+
+L1.0 copies: the L1.0 code was copied to SeaSTAR-20260922/23-Ames-general_suntracking and
+SeaSTAR-20260924/25/29-SLO-general_suntracking and processed. Each has its own L1.0/setup and
+L1.0/scripts, the same as this campaign's apart from ROOT_DIR in environment.sh and RAWFILES in the
+Makefile (taken from each campaign's L0.6 Makefile). They're clearer days than the ship day: 90-100%
+of timesteps are unflagged. The exception is the short 194-step run at 11:56 on 25 Sep, which is all
+flagged.
+
+Outputs, for each day:
+- calibration_vs_ref/plots/aod_<site>_<date>_timeseries.png: one panel per wavelength, showing the
+  unflagged SeaSTAR AOD and AERONET's AOD against local time.
+- calibration_vs_ref/plots/aod_<site>_<date>_scatter.png: SeaSTAR's mean over +-15 s around each
+  AERONET observation, against AERONET, with a 1:1 line and the median and rms of the difference.
+- calibration_vs_ref/fits/aod_<site>.txt: those statistics for every day and wavelength.
+
+This is not an independent check. These are the same days and matches the SeaSTAR V0s were
+transferred from. Agreement shows the processing chain is consistent, but it can't show the
+calibration is right. That needs a day the V0s weren't fitted on.
+
+Results (median SeaSTAR - AERONET):
+
+    nm            340      380      440      500      675      870      1020
+    Ames 09-22   +0.004   +0.008   -0.005   -0.001   -0.001   +0.001   +0.000
+    Ames 09-23   -0.002   +0.004   -0.003   +0.000   -0.003   -0.002   +0.003
+    SLO  09-24   -0.011   +0.007   -0.006   -0.006   -0.003   -0.002   +0.010
+    SLO  09-25   -0.016   +0.005   +0.006   +0.003   +0.002   +0.002   +0.018
+    SLO  09-29   -0.011   +0.008   -0.001   -0.001   -0.001   +0.000   +0.003
+
+- 500-870 nm mostly agree to within 0.003, with rms differences of 0.001-0.007.
+- 380 nm reads high on every day, by +0.004 to +0.008.
+- 340 nm reads low by 0.011-0.016 at SLO, but not at Ames.
+- 1020 nm is high at SLO (+0.010 and +0.018). That is about the same as the closure residual at
+  SLO (+0.017, section 5), so it probably comes from the AERONET V0 the transfer was based on rather
+  than from SeaSTAR.
+- 25 Sep at SLO is the worst day. The 340 nm points fall well below the 1:1 line as the AOD drops,
+  and the rms at 440 and 1020 is 0.01-0.02.
+- Late afternoon on 22 Sep at Ames, the 440 nm AOD climbs to about 0.14 after 17:00 while AERONET
+  stays near 0.10. The other wavelengths don't do this. It's worth checking whether that channel
+  compresses at low sun, which fits the large intercept in its calibration.
+
+
+7. 500 NM AOD PLOT, AND SCREENING ON TRACKING ONLY (L1.0/scripts/plot_aod.py, `make plots`; added 2026-10-27)
+
+plot_aod.py plots one wavelength's AOD (--nm, default 500) from all of a day's L10 files against
+local time, into L1.0/plots/aod_<nm>nm_<date>.png. The timesteps that pass the screening are drawn
+in colour, and the screened ones faintly behind them. Options:
+- --screen: which aod_flags screen the data (cloud, tracking, temp_low, pressure, position,
+  signal_low; default all). Screening by only some flags adds their names to the file name.
+- --ymax: the top of the y axis.
+- --hide-undefined: leave out the markers along the top of the plot for timesteps where |V| <= a
+  (shown by default). The AOD is undefined there: ln((V0 - a) / (|V| - a)) is infinite at
+  |V| = a and undefined below it, i.e. the sun is dimmed below the calibration's intercept by
+  thick cloud. At 500 nm that's 13,210 of the 27,413 timesteps, 376 of them passing the tracking
+  screen.
+plot_aod.py needed PLOTS_DIR, which was added to seastar_filepaths.py.
+
+The tracking screen (AOD_TRACKING) is set by AOD_TRACKING_LEVEL=1 in L1.0/setup/parameters.sh. A
+timestep is screened if L0.5 set any of these in tracking_flags (L0.5/setup/parameters.sh):
+- TRACKING_ERROR_1: the largest sun-to-target distance on the camera over the 1 s timestep plus
+  0.25 s before it (ANALYSIS_MARGIN) is above TRACKING_EUCLIDIAN_MAX1 = 0.010
+- NO_CAMERA_DATA: camera brightness 0 at some point in the timestep
+- CAMERA_BRIGHTNESS_LOW / _HIGH: mean camera brightness outside 35-245
+In the 09-32-14 run (22,026 timesteps), 18,566 are screened, all by TRACKING_ERROR_1 (one also has no
+camera data). The looser levels would screen 7,237 (level 2, > 0.025) and 5,153 (level 3, > 0.05).
+
+Findings:
+- Most of the data screened by the full flags isn't cloudy. Between 14:30 and 15:00 local, 1,775 of
+  the 1,800 cloud flags are AUTO_CLOUD_FLAG_FAIL, set when tracking was too poor for the cloud screen
+  to run; it doesn't mean cloud was detected.
+- Screened by tracking only, 3,134 timesteps pass, against 332 with all flags. The clear-sky 500 nm
+  AOD forms a continuous baseline: about 0.09-0.12 just after 10:45, rising to about 0.15 by 11:25,
+  then 0.12-0.15 from 13:30, apart from a dip to about 0.085 around 14:50. That agrees with the
+  0.12-0.14 from the fully screened data. Cloud spikes up to AOD 2 around 11:20, 12:15-13:10 and
+  13:20 match the cloud entries in the field notes.
+- On a ship, level-1 tracking is probably too strict. TRIPLETVAR_TRACKING_LEVEL (L0.6) and
+  AOD_TRACKING_LEVEL (L1.0) at 2 or 3 could recover much of the afternoon, but whether a tracking
+  error of 0.010-0.025 changes the signal should be checked first, e.g. against the FOV campaigns
+  (SeaSTAR-202609*-FOV-*). Neither setting has been changed.
+
+
+8. V0_MODE: INTERCEPT OR ORIGIN CALIBRATION (added 2026-10-27)
+
+V0_MODE in L1.0/setup/parameters.sh picks the calibration:
+- intercept (the default, and what sections 3 and 6 used): |V| = a + b*V_aeronet,
+  tau*m = ln((V0 - a) / (d^2 * (|V| - a)))
+- origin: |V| = b*V_aeronet, tau*m = ln(V0 / (d^2 * |V|)), with V0_SEASTAR_ORIGIN_CH<n> from
+  v0_seastar.txt and a = 0
+Using the intercept V0 without removing a would be inconsistent; each V0 goes with its own model.
+
+Changes:
+- write_v0_params.py now writes both calibrations into calibration.sh: V0_INTERCEPT_CH<n>,
+  V0_INTERCEPT_A_CH<n> and V0_ORIGIN_CH<n>. These replace the old V0_CH<n> and V0_A_CH<n> names;
+  all six campaigns' calibration.sh files were rewritten.
+- `make V0_MODE=origin` (or intercept) in a campaign's L1.0/scripts processes with that mode instead
+  of parameters.sh's, into SeaSTAR_<run>_v0origin.L10 beside the usual SeaSTAR_<run>.L10. The mode is
+  in each L10's metadata (V0_MODE).
+- `make aod V0_MODE=origin` in calibration_vs_ref/scripts compares the tagged files with AERONET,
+  into fits/aod_<site>_v0origin.txt and plots/aod_<site>_v0origin_<date>_*.png.
+- plot_aod.py puts the mode in its title, and _v0origin in the file name in origin mode.
+- The 20260922-20260929 L1.0 copies were brought back in line with this one (apart from ROOT_DIR and
+  RAWFILES), so they also have plot_aod.py and `make plots`.
+- Intercept-mode results are unchanged.
+
+Why it matters: the intercept model says a 1% change in sunlight changes |V| by only (|V| - a)/|V|
+percent, about 25-35% of it for ch2, 3, 5, 7 and 10 (a ~ 1.2 V, |V| ~ 1.6-1.8 V). The origin model
+reads that small change in |V| as an equally small change in sunlight. For ch1 and ch6 (a ~ 0.02 V)
+the two give nearly the same AOD.
+
+Results (rms SeaSTAR - AERONET, worst of the five days 20260922-20260929):
+
+    nm           340     380     440     500     675     870     1020
+    intercept    0.015   0.009   0.011   0.007   0.005   0.004   0.021
+    origin       0.026   0.011   0.084   0.061   0.025   0.015   0.034
+
+- 440-1020 nm are 3-8x worse in origin mode. On Ames 22 Sep the origin-mode AOD falls steadily
+  through the afternoon as the sun gets lower, going negative at 440 and 500 nm by 17:00, while
+  AERONET stays flat at about 0.10. That fits a voltage that responds less than proportionally to
+  the sunlight, as the intercept fit says, so the proportional model misreads the airmass-driven fall
+  in signal as a change in aerosol. The origin-mode 440 nm trace is also very smooth, which fits a
+  channel whose voltage barely responds.
+- 340 and 380 nm are about the same in both modes. Origin mode is closer at 340 nm at SLO (median
+  -0.002 against -0.011 to -0.016), suggesting ch6's small intercept (a ~ 0.015 V) isn't helping.
+- Conclusion: the intercept calibration is clearly better for ch2, 3, 5, 7 and 10. For ch6 (340 nm)
+  the origin calibration may be slightly better.
+
+9. GAS ABSORPTION CROSS-SECTIONS (added 2026-10-27)
+
+The ozone and NO2 cross-sections are fixed per-channel values in setup/parameters.sh (OZONE_XSEC_CH<n>,
+NO2_XSEC_CH<n>, cm^2/molecule), used at each channel's centre wavelength. The gas optical depth is
+tau = DU * 2.687e16 * sigma (seastar_atmosphere.tau_gas), with OZONE_COLUMN_DU=300 and NO2_COLUMN_DU=0.1.
+It is multiplied by the ozone or NO2 airmass (22 km shell) and subtracted before dividing by the
+aerosol airmass. The cross-sections and the taus are saved in each L10 (metadata OZONE_XSEC, NO2_XSEC;
+fields tau_ozone_<nm>nm, tau_no2_<nm>nm).
+
+    ch   nm     O3 sigma   NO2 sigma   tau O3 (300 DU)   tau NO2 (0.1 DU)
+    6    340    9.0e-22    4.5e-19     0.0073            0.0012
+    1    380    0          5.0e-19     0                 0.0013
+    2    440    1.0e-22    5.5e-19     0.0008            0.0015
+    3    500    1.3e-21    2.5e-19     0.0105            0.0007
+    5    675    1.65e-21   1.5e-20     0.0133            0.00004
+    7    870    4.0e-23    0           0.0003            0
+    10   1020   0          0           0                 0
+
+Caveats:
+- The values are approximations of the standard laboratory sets (ozone: Bass-Paur/Serdyuchenko
+  Huggins and Chappuis bands; NO2: Vandaele et al. 1998), probably good to 10-20%. They haven't
+  been checked against the tables.
+- They are taken at the centre wavelength, not weighted over the filter passband. This matters most
+  for NO2, whose spectrum is very structured around 400-450 nm, given the 10 nm filters.
+- There is no temperature dependence (this matters for the Huggins-band ozone at 340 nm).
+- Only ozone at 500 and 675 nm matters much (0.010-0.013 of AOD): a 10% error in sigma or a 30 DU
+  error in the column gives about 0.001 in AOD. NO2 at 0.1 DU is <= 0.0015 everywhere, but could be
+  several times that in a polluted coastal plume.
+- To do: compute filter-weighted cross-sections from the Serdyuchenko and Vandaele spectra and the
+  SeaSTAR filter transmission curves, and use the day's satellite ozone/NO2 columns (e.g. OMI).
+
+10. TRACKING SCREEN AFTER 13:30 LOCAL ON 20260930 (added 2026-10-28)
+
+After 13:30 PDT (13:30-15:39, all in the 09-32-14 run; 7,760 timesteps), from the intercept-mode L10s:
+
+                                                    timesteps   fraction
+    AOD_TRACKING, level 1 (euclidian > 0.010)           5,200     67.0%
+    would be flagged at level 2 (> 0.025)                 580      7.5%
+    would be flagged at level 3 (> 0.05)                   66      0.9%
+    NO_CAMERA_DATA / CAMERA_BRIGHTNESS_LOW / _HIGH          0      0%
+
+- It is all pointing error: the camera was always present and in its brightness range. So the
+  screen depends entirely on the threshold, and most screened points have a small error
+  (0.010-0.025).
+- It is spread through the afternoon: each half-hour loses 56-79% (13:30 68%, 14:00 56%, 14:30 79%,
+  15:00 74%), and the partial half-hour from 15:30 loses 37%. There's no single bad stretch.
+- Tracking isn't what removes most of the afternoon: the cloud flag is set on 95.7% of these
+  timesteps. Of the 2,560 that pass tracking, 2,228 are removed by other flags (mostly cloud), and
+  only 332 (4.3%) pass every flag.
+- Relaxing AOD_TRACKING_LEVEL to 2 would cut the tracking loss to 7.5%, but the cloud flag would
+  still remove nearly everything. To do: break the cloud flags down for this window, to see how much
+  is AUTO_CLOUD_FLAG_FAIL (the cloud screen not running because of bad tracking) rather than cloud.
+
+11. MICROTOPS OVERLAY, AND THE PLOT SETTINGS IN THE MAKEFILES (added 2026-10-28)
+
+plot_aod.py has two new options:
+- --microtops <file> overlays a Microtops computed_aod_L15_groups file (orange diamonds). The file is a
+  few header lines, then a tab-separated table with dates like SEP/30/2026 in UTC. The AOD at the plotted
+  wavelength is used, and the times are converted to SEASTAR_TIMEZONE.
+- --xmin HH:MM sets the start of the x axis, in local time on the plot's date.
+The legend markers are now drawn at one fixed size (markerscale=4 had made the Microtops diamond huge).
+
+The Microtops file is microtops/Moving_485_computed_aod_L15_groups_2026.txt (instrument 3766, #485, on
+the moving ship). It has 6 groups from 17:54 to 22:27 UTC (10:54-15:27 PDT). The same folder also has
+the L1.0 and L1.5 per-point files, which aren't used.
+
+The median 500 nm SeaSTAR AOD (intercept V0) within +/-2 minutes of each Microtops group:
+
+    PDT        Microtops   SeaSTAR, tracking-screened   SeaSTAR, all flags
+    10:54:57   0.110       0.114 (n=12)                 none pass
+    13:37:39   0.142       0.151 (n=85)                 0.151 (n=7)
+    13:59:31   0.138       0.138 (n=84)                 0.137 (n=10)
+    14:47:52   0.085       0.088 (n=61)                 0.092 (n=2)
+    15:03:04   0.106       0.112 (n=86)                 0.114 (n=3)
+    15:27:25   0.138       0.144 (n=77)                 0.145 (n=4)
+
+- SeaSTAR follows the Microtops values all afternoon, including the drop to about 0.085 near 14:48.
+  SeaSTAR is higher by 0 to 0.009, typically about 0.005, similar to the 500 nm agreement with
+  AERONET.
+- Unlike the AERONET days (the V0 transfer days), this comparison is independent of the calibration.
+- Each Microtops group is a single value for a few shots, so some of the difference is timing
+  within the window.
+
+The Makefiles (L1.0/scripts, `make plots`):
+- All six campaigns now screen the plot by the tracking flags only, via AOD_PLOT_SCREEN ?= tracking.
+  The plot is written to plots/aod_500nm_<date>_tracking.png. Older plots screened by all flags
+  (aod_500nm_<date>.png) are left in place.
+- AOD_PLOT_OPTIONS passes further plot_aod.py options. Here it is
+  `--ymax 0.3 --xmin 10:30 --hide-undefined`. In the other five campaigns it is empty, so their axes
+  come from the data.
+- MICROTOPS is the campaign's first microtops/*_L15_groups_*.txt, if there is one, and is passed as
+  --microtops. Only this campaign has one.
+- For the plot screened by all flags:
+  `make plots AOD_PLOT_SCREEN="cloud tracking temp_low pressure position signal_low" AOD_PLOT_OPTIONS=`
+- plot_aod.py is identical in all six campaigns' L1.0/scripts.
+
+The 20260922 Ames plot, screened by tracking only: just 7 of 19,425 timesteps are screened, and the
+AOD drifts smoothly from about 0.10 to 0.08 through the afternoon. In the first few minutes after
+12:10 it jumps from about 0.077 to 0.10, which looks like warm-up at the start of the run.

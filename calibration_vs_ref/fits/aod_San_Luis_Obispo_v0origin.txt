@@ -1,0 +1,25 @@
+# San_Luis_Obispo: SeaSTAR L1.0 AOD (unflagged, mean within ±15 s) against AERONET AOD (plot_aod_vs_aeronet.py)
+# ../../AERONET-SLO/202609/San_Luis_Obispo_608_raw_and_aod_tempcorr.npz
+# these are the V0 transfer days, so this checks the processing chain, not the calibration
+# site             day        V0 mode      nm    n  AERONET  SeaSTAR  med diff rms diff
+  San_Luis_Obispo  2026-09-24 origin      340   62   0.1157   0.1155   -0.0030   0.0126
+  San_Luis_Obispo  2026-09-24 origin      380   62   0.1118   0.1215   +0.0066   0.0079
+  San_Luis_Obispo  2026-09-24 origin      440   62   0.0940   0.0860   +0.0014   0.0430
+  San_Luis_Obispo  2026-09-24 origin      500   62   0.0815   0.0633   -0.0097   0.0364
+  San_Luis_Obispo  2026-09-24 origin      675   62   0.0581   0.0489   -0.0042   0.0205
+  San_Luis_Obispo  2026-09-24 origin      870   62   0.0524   0.0464   -0.0022   0.0146
+  San_Luis_Obispo  2026-09-24 origin     1020   62   0.0466   0.0624   +0.0207   0.0203
+  San_Luis_Obispo  2026-09-25 origin      340   39   0.0766   0.0769   -0.0015   0.0123
+  San_Luis_Obispo  2026-09-25 origin      380   39   0.0763   0.0869   +0.0080   0.0106
+  San_Luis_Obispo  2026-09-25 origin      440   39   0.0624   0.0939   +0.0327   0.0296
+  San_Luis_Obispo  2026-09-25 origin      500   39   0.0531   0.0678   +0.0145   0.0155
+  San_Luis_Obispo  2026-09-25 origin      675   39   0.0363   0.0498   +0.0132   0.0116
+  San_Luis_Obispo  2026-09-25 origin      870   39   0.0329   0.0455   +0.0121   0.0110
+  San_Luis_Obispo  2026-09-25 origin     1020   39   0.0282   0.0650   +0.0365   0.0341
+  San_Luis_Obispo  2026-09-29 origin      340   28   0.0762   0.0765   +0.0011   0.0021
+  San_Luis_Obispo  2026-09-29 origin      380   28   0.0759   0.0856   +0.0105   0.0100
+  San_Luis_Obispo  2026-09-29 origin      440   28   0.0621   0.0928   +0.0294   0.0283
+  San_Luis_Obispo  2026-09-29 origin      500   28   0.0527   0.0673   +0.0120   0.0129
+  San_Luis_Obispo  2026-09-29 origin      675   28   0.0379   0.0497   +0.0106   0.0110
+  San_Luis_Obispo  2026-09-29 origin      870   28   0.0356   0.0460   +0.0101   0.0105
+  San_Luis_Obispo  2026-09-29 origin     1020   28   0.0305   0.0630   +0.0318   0.0322

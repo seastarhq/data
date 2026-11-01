@@ -1,0 +1,18 @@
+# NASA_Ames: SeaSTAR L1.0 AOD (unflagged, mean within ±15 s) against AERONET AOD (plot_aod_vs_aeronet.py)
+# ../../AERONET-NASA_Ames/202609/NASA_Ames_905_raw_and_aod_tempcorr.npz
+# these are the V0 transfer days, so this checks the processing chain, not the calibration
+# site             day        V0 mode      nm    n  AERONET  SeaSTAR  med diff rms diff
+  NASA_Ames        2026-09-22 intercept   340   38   0.1319   0.1364   +0.0037   0.0043
+  NASA_Ames        2026-09-22 intercept   380   38   0.1306   0.1376   +0.0077   0.0079
+  NASA_Ames        2026-09-22 intercept   440   38   0.1061   0.1053   -0.0046   0.0105
+  NASA_Ames        2026-09-22 intercept   500   38   0.0873   0.0871   -0.0013   0.0017
+  NASA_Ames        2026-09-22 intercept   675   38   0.0570   0.0561   -0.0008   0.0010
+  NASA_Ames        2026-09-22 intercept   870   38   0.0445   0.0458   +0.0012   0.0015
+  NASA_Ames        2026-09-22 intercept  1020   38   0.0360   0.0361   +0.0003   0.0010
+  NASA_Ames        2026-09-23 intercept   340   35   0.0696   0.0693   -0.0015   0.0048
+  NASA_Ames        2026-09-23 intercept   380   44   0.0761   0.0794   +0.0038   0.0049
+  NASA_Ames        2026-09-23 intercept   440   45   0.0607   0.0569   -0.0026   0.0057
+  NASA_Ames        2026-09-23 intercept   500   45   0.0484   0.0481   +0.0001   0.0018
+  NASA_Ames        2026-09-23 intercept   675   45   0.0323   0.0299   -0.0025   0.0025
+  NASA_Ames        2026-09-23 intercept   870   45   0.0273   0.0258   -0.0015   0.0018
+  NASA_Ames        2026-09-23 intercept  1020   45   0.0203   0.0234   +0.0034   0.0043

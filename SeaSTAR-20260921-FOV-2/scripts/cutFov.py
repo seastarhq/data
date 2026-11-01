@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 # cross-sections of the FOV scan along x and y at the native scan step: the
 # scan column and row through the centre, with their neighbours faint behind
-# them, every channel normalised to its own peak and overlaid.
+# them, every channel normalised to its own peak and overlaid, and again with
+# each channel on its own pair of panels.
 #
 # like fitFov.py this grids on the commanded stage position (tx, ty), so the
 # profiles are sampled exactly at the scan steps.  the plotted range is trimmed
@@ -253,11 +254,14 @@ if args.outdir:
 
 fig, (axX, axY) = plt.subplots(1, 2, figsize=(14, 5.5))
 
-def drawCuts(ax, positions, cuts, lo, hi, along, at, atValue):
+def drawCuts(ax, positions, cuts, lo, hi, along, at, atValue, which=None, title=None):
+	if which is None:
+		which = range(len(channels))
+
 	for k, cut in sorted(cuts.items(), key=lambda item: -abs(item[0])):
 		centre = (k == 0)
 
-		for j in range(len(channels)):
+		for j in which:
 			colour = channelColours[j % len(channelColours)]
 
 			if centre:
@@ -270,11 +274,11 @@ def drawCuts(ax, positions, cuts, lo, hi, along, at, atValue):
 	ax.set_ylim(0, 1.05)
 	ax.set_xlabel(along)
 	ax.set_ylabel("signal / peak")
-	ax.set_title(f"cut along {along} at {at} = {atValue:.4f}, neighbours ±{args.neighbours} faint")
+	ax.set_title(title or f"cut along {along} at {at} = {atValue:.4f}, neighbours ±{args.neighbours} faint")
 	ax.grid(True, alpha=0.3)
 
-drawCuts(axX, uniqueTx, xCuts, xLo, xHi, "tx", "ty", uniqueTy[centreJ])
-drawCuts(axY, uniqueTy, yCuts, yLo, yHi, "ty", "tx", uniqueTx[centreI])
+drawCuts(axX, uniqueTx, xCuts, xLo, xHi, "x", "y", uniqueTy[centreJ])
+drawCuts(axY, uniqueTy, yCuts, yLo, yHi, "y", "x", uniqueTx[centreI])
 
 axY.legend(loc='upper right', fontsize=8, ncol=2)
 
@@ -284,6 +288,55 @@ fig.tight_layout()
 cutsPath = os.path.join(args.outdir, f"{stem}_fov_cuts.png")
 fig.savefig(cutsPath, dpi=150)
 print(f"Wrote {cutsPath}")
+
+# the same cuts with each channel on its own pair of panels, x cut then y cut,
+# the first half of the channels down the left and the rest down the right,
+# over the same trimmed range so the rows line up.  an empty column in the
+# middle keeps the two halves apart:
+rows = (len(channels) + 1)//2
+
+fig, axes = plt.subplots(rows, 5, figsize=(25, 2.4*rows), sharex='col', squeeze=False,
+                         gridspec_kw={'width_ratios': [1, 1, 0.12, 1, 1]})
+
+for ax in axes[:, 2]:
+	ax.set_visible(False)
+
+for j in range(len(channels)):
+	row, side = j % rows, j // rows
+	axX, axY = axes[row, 3*side], axes[row, 3*side + 1]
+
+	drawCuts(axX, uniqueTx, xCuts, xLo, xHi, "x", "y", uniqueTy[centreJ], which=[j],
+	         title=f"ch{channelNumbers[j]}: along x at y = {uniqueTy[centreJ]:.4f}")
+	drawCuts(axY, uniqueTy, yCuts, yLo, yHi, "y", "x", uniqueTx[centreI], which=[j],
+	         title=f"ch{channelNumbers[j]}: along y at x = {uniqueTx[centreI]:.4f}")
+
+	# only the lowest panel in each column keeps its axis label and ticks; with
+	# an odd number of channels that is one row up on the right:
+	lowest = (row == rows - 1) or (j == len(channels) - 1)
+
+	for ax in (axX, axY):
+		if lowest:
+			ax.tick_params(labelbottom=True)
+		else:
+			ax.set_xlabel("")
+
+		if side > 0:
+			ax.set_ylabel("")
+
+	if side == 0:
+		axY.set_ylabel("")
+
+# the empty slot at the bottom right when the channel count is odd:
+for j in range(len(channels), 2*rows):
+	axes[j % rows, 3].set_visible(False)
+	axes[j % rows, 4].set_visible(False)
+
+fig.suptitle(f"{stem}: FOV cross-sections per channel, normalised to its peak, neighbours ±{args.neighbours} faint")
+fig.tight_layout(rect=(0, 0, 1, 1 - 0.4/fig.get_figheight()))
+
+channelCutsPath = os.path.join(args.outdir, f"{stem}_fov_cuts_channels.png")
+fig.savefig(channelCutsPath, dpi=150)
+print(f"Wrote {channelCutsPath}")
 
 if not args.noShow:
 	plt.show()

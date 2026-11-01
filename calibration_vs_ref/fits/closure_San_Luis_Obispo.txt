@@ -1,0 +1,13 @@
+# San_Luis_Obispo: the L1.0 AOD calculation (SeaSTAR-20260930-RV_Shearwater) on AERONET's voltages and V0s (aeronet_aod_closure.py)
+# ../../AERONET-SLO/202609/San_Luis_Obispo_608_raw_and_aod_tempcorr.npz
+# V0 from /home/steve/nothing/seastar/seastarhq/data/AERONET-SLO/202609/calibrs_for_608.txt
+# pressure 1005 hPa, ozone 300 DU, NO2 0.1 DU, 579 sun observations, 2026-09-24T14:35 to 2026-09-30T01:04 UTC
+# diff = mine - AERONET. slope is d(diff)/d(aerosol airmass); airmass 1.23-6.99
+#    nm     n AERONET AOD   tau_R  tau_O3 tau_NO2 median diff               iqr    slope
+    340   579      0.0765  0.7067  0.0073  0.0012     -0.0010  -0.0022.. -0.0004  -0.0002
+    380   579      0.0767  0.4425  0.0000  0.0013     +0.0045  +0.0038.. +0.0049  -0.0001
+    440   579      0.0645  0.2406  0.0008  0.0015     +0.0023  +0.0012.. +0.0035  +0.0007
+    500   579      0.0574  0.1422  0.0105  0.0007     -0.0057  -0.0088.. -0.0028  +0.0017
+    675   579      0.0454  0.0419  0.0133  0.0000     -0.0029  -0.0033.. -0.0025  +0.0003
+    870   579      0.0411  0.0150  0.0003  0.0000     +0.0000  -0.0002.. +0.0003  -0.0001
+   1020   579      0.0371  0.0079  0.0000  0.0000     +0.0168  +0.0080.. +0.0266  -0.0056
