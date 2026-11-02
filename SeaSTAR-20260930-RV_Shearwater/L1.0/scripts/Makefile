@@ -22,8 +22,9 @@ L10_FILES=$(RAWFILES:%=$(PICKLE)/SeaSTAR_%$(L10_TAG).L10)
 AOD_PLOT_NM ?= 500
 # the aod_flags that screen it (plot_aod.py --screen: cloud tracking temp_low pressure position signal_low)
 AOD_PLOT_SCREEN ?= tracking
-# other plot_aod.py options: the axis limits, and leaving out the timesteps where the AOD is undefined
-AOD_PLOT_OPTIONS ?= --ymax 0.3 --xmin 10:30 --hide-undefined
+# other plot_aod.py options: the axis limits, leaving out the timesteps where the AOD is undefined,
+# and leaving out the timesteps with bad tracking entirely
+AOD_PLOT_OPTIONS ?= --ymax 0.3 --xmin 10:30 --hide-undefined --tracked-only
 AOD_PLOT=../plots/aod_$(AOD_PLOT_NM)nm$(L10_TAG).stamp
 # overlaid with the campaign's Microtops L1.5 groups file, if there is one
 MICROTOPS=$(firstword $(wildcard ../../microtops/*_L15_groups_*.txt))

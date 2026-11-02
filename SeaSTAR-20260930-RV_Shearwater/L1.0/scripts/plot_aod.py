@@ -30,9 +30,11 @@ from seastar_analysis_params import *
 # undefined where |V| <= a (the sun is dimmed below the calibration's intercept, by thick cloud): those timesteps
 # that pass the screening are marked along the top of the plot, rather than left out (--hide-undefined leaves
 # them out). --microtops overlays a Microtops L1.5 groups file (one row per group of shots, in UTC), the AOD at the
-# same wavelength, its times converted to SEASTAR_TIMEZONE.
+# same wavelength, its times converted to SEASTAR_TIMEZONE. --tracked-only leaves out the SeaSTAR timesteps with
+# the tracking flag set altogether (not even faintly, nor marked as undefined), whatever --screen picks.
 # writes aod_<nm>nm_<date>.png to PLOTS_DIR, with the date of the first file, or aod_<nm>nm_<date>_<flags>.png
-# when only some flags screen it, and _v0origin after the date for L10 files processed with V0_MODE=origin
+# when only some flags screen it, and _v0origin after the date for L10 files processed with V0_MODE=origin,
+# and _tracked at the end with --tracked-only
 
 SCREEN_FLAGS = {'cloud': AOD_CLOUD, 'tracking': AOD_TRACKING, 'temp_low': AOD_CHANNEL_TEMP_LOW,
                 'pressure': AOD_PRESSURE_FILLED, 'position': AOD_POSITION_FILLED, 'signal_low': AOD_SIGNAL_LOW}
@@ -51,6 +53,8 @@ parser.add_argument('--ymax', type=float, help='the top of the y axis (default: 
 parser.add_argument('--xmin', help='the start of the x axis, HH:MM local time on the date of the first file (default: from the data)')
 parser.add_argument('--hide-undefined', action='store_true',
                     help="don't mark the timesteps where |V| <= a and the AOD is undefined")
+parser.add_argument('--tracked-only', action='store_true',
+                    help='only plot the SeaSTAR timesteps that pass the tracking flag (leave the rest out entirely)')
 parser.add_argument('--microtops', help='a Microtops computed_aod_L15_groups file to overlay (times in UTC)')
 parser.add_argument('-o', '--outputfile', help='the plot to write, instead of PLOTS_DIR/aod_<nm>nm_<date>.png')
 args = parser.parse_args()
@@ -77,9 +81,12 @@ volts = L10_data[f'ch{ch}_1x_darksub_quad_v0tc']
 screen_mask = 0
 for name in args.screen:
     screen_mask |= SCREEN_FLAGS[name]
-good = ((L10_data['aod_flags'] & screen_mask) == 0) & np.isfinite(aod)
-flagged = ~good & np.isfinite(aod)
-undefined = ((L10_data['aod_flags'] & screen_mask & ~AOD_SIGNAL_LOW) == 0) & np.isfinite(volts) & (volts <= metadata['V0_A'][ch])
+# with --tracked-only, the timesteps with bad tracking aren't plotted at all
+tracked = (L10_data['aod_flags'] & AOD_TRACKING) == 0 if args.tracked_only else np.ones(len(L10_data), dtype=bool)
+good = ((L10_data['aod_flags'] & screen_mask) == 0) & np.isfinite(aod) & tracked
+flagged = ~good & np.isfinite(aod) & tracked
+undefined = (((L10_data['aod_flags'] & screen_mask & ~AOD_SIGNAL_LOW) == 0) & np.isfinite(volts)
+             & (volts <= metadata['V0_A'][ch]) & tracked)
 date = str(L10_data['datetime'].min())[:10]
 v0_mode = metadata.get('V0_MODE', 'intercept')
 
@@ -96,10 +103,13 @@ def read_microtops(path, nm, timezone):
     return local.to_numpy(), table[f'AOD {nm}'].to_numpy()
 
 fig, ax = plt.subplots(figsize=(11, 4.2))
-ax.plot(times[flagged], aod[flagged], '.', color=FLAGGED_COLOUR, markersize=1.5,
-        label=f'screened ({flagged.sum()})')
-ax.plot(times[good], aod[good], '.', color=UNFLAGGED_COLOUR, markersize=2.5,
-        label=f'passed ({good.sum()})')
+# empty groups are left out, so they don't show up in the legend as (0)
+if flagged.any():
+    ax.plot(times[flagged], aod[flagged], '.', color=FLAGGED_COLOUR, markersize=1.5,
+            label=f'screened ({flagged.sum()})')
+if good.any():
+    ax.plot(times[good], aod[good], '.', color=UNFLAGGED_COLOUR, markersize=2.5,
+            label='SeaSTAR')
 if good.any():
     lo, hi = np.percentile(aod[good], [0.5, 99.5])
     pad = 0.15 * (hi - lo) + 0.01
@@ -111,7 +121,7 @@ else:
 if args.microtops is not None:
     mt_times, mt_aod = read_microtops(args.microtops, args.nm, timezone)
     ax.plot(mt_times, mt_aod, 'D', color=MICROTOPS_COLOUR, markersize=8, markeredgecolor='white', markeredgewidth=1.5,
-            label=f'Microtops L1.5 groups ({len(mt_aod)})', zorder=3)
+            label='Microtops', zorder=3)
 if undefined.any() and not args.hide_undefined:
     ax.plot(times[undefined], np.full(undefined.sum(), ax.get_ylim()[1]), '|', color=UNDEFINED_COLOUR, markersize=8,
             clip_on=False, label=f'|V| \u2264 a, AOD undefined ({undefined.sum()})')
@@ -126,18 +136,20 @@ ax.grid(True, color='#e1e0d9', linewidth=0.5)
 ax.set_axisbelow(True)
 for side in ('top', 'right'):
     ax.spines[side].set_visible(False)
-legend = ax.legend(loc='upper left', frameon=False, fontsize=9)
 # the data dots are too small to read in the legend, so every legend marker is drawn at one size
-for handle in legend.legend_handles:
+legend_handles = ax.legend(loc='upper left', frameon=False, fontsize=9).legend_handles if ax.get_legend_handles_labels()[0] else []
+for handle in legend_handles:
     handle.set_markersize(7)
 all_flags = set(args.screen) == set(SCREEN_FLAGS)
-screened_by = 'all aod_flags' if all_flags else ', '.join(args.screen) + ' flags only'
-ax.set_title(f'SeaSTAR L1.0 AOD at {args.nm} nm, {date} ({os.path.basename(ROOT_DIR)}), {v0_mode} V0, screened by {screened_by}',
+# the ship, from the campaign directory name SeaSTAR-<date>-<ship>, e.g. RV_Shearwater -> RV Shearwater
+ship = os.path.basename(ROOT_DIR).split('-')[-1].replace('_', ' ')
+ax.set_title(f'SeaSTAR preliminary {args.nm}nm AOD, {date}, {ship}',
              loc='left', fontsize=10)
 fig.tight_layout()
 
 if args.outputfile is None:
     suffix = ('' if v0_mode == 'intercept' else f'_v0{v0_mode}') + ('' if all_flags else '_' + '_'.join(sorted(args.screen)))
+    suffix += '_tracked' if args.tracked_only else ''
     plot_path = os.path.join(PLOTS_DIR, f'aod_{args.nm}nm_{date}{suffix}.png')
 else:
     plot_path = args.outputfile
