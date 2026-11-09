@@ -1,0 +1,14 @@
+# all days: SeaSTAR L1.0 AOD (unflagged, mean within ±15 s) against AERONET AOD (plot_aod_scatter_all.py)
+# NASA_Ames 2026-09-22
+# NASA_Ames 2026-09-23
+# San_Luis_Obispo 2026-09-24
+# San_Luis_Obispo 2026-09-29
+# these are the V0 transfer days, so this checks the processing chain, not the calibration
+# V0 mode      nm    n  AERONET  SeaSTAR  med diff rms diff
+  intercept   340  163   0.1119   0.1084   -0.0030   0.0084
+  intercept   380  172   0.1035   0.1102   +0.0069   0.0073
+  intercept   440  173   0.0833   0.0824   -0.0004   0.0075
+  intercept   500  173   0.0701   0.0658   -0.0019   0.0043
+  intercept   675  173   0.0470   0.0453   -0.0015   0.0025
+  intercept   870  173   0.0409   0.0407   -0.0000   0.0020
+  intercept  1020  173   0.0347   0.0379   +0.0055   0.0082

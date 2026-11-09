@@ -32,7 +32,8 @@ from seastar_analysis_params import *
 # them out). --microtops overlays a Microtops L1.5 groups file (one row per group of shots, in UTC), the AOD at the
 # same wavelength, its times converted to SEASTAR_TIMEZONE. --tracked-only leaves out the SeaSTAR timesteps with
 # the tracking flag set altogether (not even faintly, nor marked as undefined), whatever --screen picks.
-# writes aod_<nm>nm_<date>.png to PLOTS_DIR, with the date of the first file, or aod_<nm>nm_<date>_<flags>.png
+# --title adds a title with the wavelength, date and ship; by default there is none.
+# writes aod_<nm>nm_<date>.png and .pdf to PLOTS_DIR, with the date of the first file, or aod_<nm>nm_<date>_<flags>.png
 # when only some flags screen it, and _v0origin after the date for L10 files processed with V0_MODE=origin,
 # and _tracked at the end with --tracked-only
 
@@ -56,6 +57,7 @@ parser.add_argument('--hide-undefined', action='store_true',
 parser.add_argument('--tracked-only', action='store_true',
                     help='only plot the SeaSTAR timesteps that pass the tracking flag (leave the rest out entirely)')
 parser.add_argument('--microtops', help='a Microtops computed_aod_L15_groups file to overlay (times in UTC)')
+parser.add_argument('--title', action='store_true', help='give the plot a title with the wavelength, date and ship (default: none)')
 parser.add_argument('-o', '--outputfile', help='the plot to write, instead of PLOTS_DIR/aod_<nm>nm_<date>.png')
 args = parser.parse_args()
 
@@ -141,10 +143,11 @@ legend_handles = ax.legend(loc='upper left', frameon=False, fontsize=9).legend_h
 for handle in legend_handles:
     handle.set_markersize(7)
 all_flags = set(args.screen) == set(SCREEN_FLAGS)
-# the ship, from the campaign directory name SeaSTAR-<date>-<ship>, e.g. RV_Shearwater -> RV Shearwater
-ship = os.path.basename(ROOT_DIR).split('-')[-1].replace('_', ' ')
-ax.set_title(f'SeaSTAR preliminary {args.nm}nm AOD, {date}, {ship}',
-             loc='left', fontsize=10)
+if args.title:
+    # the ship, from the campaign directory name SeaSTAR-<date>-<ship>, e.g. RV_Shearwater -> RV Shearwater
+    ship = os.path.basename(ROOT_DIR).split('-')[-1].replace('_', ' ')
+    ax.set_title(f'SeaSTAR preliminary {args.nm}nm AOD, {date}, {ship}',
+                 loc='left', fontsize=10)
 fig.tight_layout()
 
 if args.outputfile is None:
@@ -155,5 +158,6 @@ else:
     plot_path = args.outputfile
 os.makedirs(os.path.dirname(os.path.abspath(plot_path)), exist_ok=True)
 fig.savefig(plot_path, dpi=120)
+fig.savefig(os.path.splitext(plot_path)[0] + '.pdf')
 plt.close(fig)
 print(f"  plot: {plot_path}")

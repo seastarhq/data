@@ -8,10 +8,16 @@
 #   make response        just the SeaSTAR-against-AERONET voltage plots, coloured by temperature, without
 #                        and with the residual- and scatter-method temperature corrections from the fits
 #   make v0              the SeaSTAR V0s transferred from both sites' AERONET V0s (../fits/v0_seastar.txt)
+#   make l10_calibration write the V0s and temperature corrections into each campaign's L1.0/setup/calibration.sh
+#                        (write_v0_params.py), so the campaigns' L1.0 is rebuilt with them. by default the campaigns
+#                        whose calibration.sh already has the written block; the top-level Makefile passes
+#                        CALIBRATION_CAMPAIGNS="<its L1.0 campaigns>"
 #   make closure         run a campaign's L1.0 AOD calculation on each site's AERONET voltages and V0s, against
 #                        AERONET's AOD (../fits/closure_<site>.txt, ../plots/closure_<site>.png)
 #   make aod             plot each day's SeaSTAR L1.0 AOD against the AERONET AOD (../plots/aod_<site>_<date>_*.png,
 #                        ../fits/aod_<site>.txt). the .L10 files are made by each campaign's L1.0/scripts/Makefile
+#   make aod_all         plot the AOD of all the days of both sites together (../plots/aod_all_days_scatter.png,
+#                        ../fits/aod_all_days.txt)
 #   make aod V0_MODE=origin
 #                        the same from the campaigns' SeaSTAR_<run>_v0origin.L10 files (made with
 #                        `make V0_MODE=origin` in each campaign's L1.0/scripts), into aod_<site>_v0origin*
@@ -24,7 +30,8 @@
 #
 # the AERONET npz files are made by the Makefiles in ../../AERONET-*, and the L06 files by each
 # campaign's L0.6/scripts/Makefile; the Makefile at the top of the data tree runs them first.
-# matching and plotting parameters are in ../setup/parameters.sh
+# matching and plotting parameters are in ../setup/parameters.sh, and the campaigns matched against
+# each site in ../setup/campaigns.mk
 
 ROOT=../..
 PICKLE=../pickle
@@ -32,14 +39,19 @@ PLOTS=../plots
 FITS=../fits
 SETUPFILES=../setup/local.sh ../setup/environment.sh ../setup/parameters.sh
 SETUP=. ../setup/local.sh; . ../setup/environment.sh; . ../setup/parameters.sh;
+# the campaigns of each site, in make syntax. not in SETUPFILES, which SETUP sources as shell
+CAMPAIGNS_FILE=../setup/campaigns.mk
+include $(CAMPAIGNS_FILE)
 
 MATCH_SCRIPT=./match_aeronet_seastar.py
 PLOT_SCRIPT=./plot_matched.py
 FIT_SCRIPT=./fit_tempcorr.py
 RESPONSE_SCRIPT=./plot_response.py
 V0_SCRIPT=./transfer_v0.py
+WRITE_V0_SCRIPT=./write_v0_params.py
 CLOSURE_SCRIPT=./aeronet_aod_closure.py
 AOD_SCRIPT=./plot_aod_vs_aeronet.py
+AOD_ALL_SCRIPT=./plot_aod_scatter_all.py
 
 AERONET_MONTH ?= 202609
 
@@ -49,16 +61,15 @@ L10_CAMPAIGN ?= SeaSTAR-20260930-RV_Shearwater
 L10_DIR=$(ROOT)/$(L10_CAMPAIGN)/L1.0
 L10_SETUPFILES=$(L10_DIR)/setup/parameters.sh $(L10_DIR)/setup/channel_wavelengths.sh
 
-# each AERONET site, its temperature-corrected data, and the SeaSTAR campaigns made beside it.
+# each AERONET site and its temperature-corrected data. the SeaSTAR campaigns made beside each
+# site (<site>_CAMPAIGNS) are in $(CAMPAIGNS_FILE).
 # the SeaSTAR data from the RV Shearwater (20260930) is at sea and from a day neither site
 # covers, so it isn't matched
 SITES=NASA_Ames San_Luis_Obispo
 
 NASA_Ames_AERONET=$(ROOT)/AERONET-NASA_Ames/$(AERONET_MONTH)/NASA_Ames_905_raw_and_aod_tempcorr.npz
-NASA_Ames_CAMPAIGNS=SeaSTAR-20260922-Ames-general_suntracking SeaSTAR-20260923-Ames-general_suntracking
 
 San_Luis_Obispo_AERONET=$(ROOT)/AERONET-SLO/$(AERONET_MONTH)/San_Luis_Obispo_608_raw_and_aod_tempcorr.npz
-San_Luis_Obispo_CAMPAIGNS=SeaSTAR-20260924-SLO-general_suntracking SeaSTAR-20260925-SLO-general_suntracking SeaSTAR-20260929-SLO-general_suntracking
 
 # every L06 file of a site's campaigns
 site_l06 = $(foreach c,$($(1)_CAMPAIGNS),$(wildcard $(ROOT)/$(c)/pickle/*.L06))
@@ -76,8 +87,13 @@ RESPONSE=$(SITES:%=$(PLOTS)/response_%.png)
 V0=$(FITS)/v0_seastar.txt
 CLOSURE=$(SITES:%=$(FITS)/closure_%.txt)
 AOD=$(SITES:%=$(FITS)/aod_%$(L10_TAG).txt)
+AOD_ALL=$(FITS)/aod_all_days$(L10_TAG).txt
+# the campaigns whose L1.0/setup/calibration.sh is written from the V0s and tempcorr fits
+CALIBRATION_CAMPAIGNS ?= $(patsubst $(ROOT)/%/L1.0/setup/calibration.sh,%,\
+	$(shell grep -l '^\# BEGIN V0 calibration' $(ROOT)/SeaSTAR-*/L1.0/setup/calibration.sh 2>/dev/null))
+L10_CALIBRATION=$(CALIBRATION_CAMPAIGNS:%=$(ROOT)/%/L1.0/setup/calibration.sh)
 
-all: matched plots tempcorr response v0 closure aod
+all: matched plots tempcorr response v0 l10_calibration closure aod aod_all
 
 matched: $(MATCHED)
 
@@ -89,12 +105,16 @@ response: $(RESPONSE)
 
 v0: $(V0)
 
+l10_calibration: $(L10_CALIBRATION)
+
 closure: $(CLOSURE)
 
 aod: $(AOD)
 
+aod_all: $(AOD_ALL)
+
 .SECONDEXPANSION:
-$(PICKLE)/matched_%.pkl: $$($$*_AERONET) $$(call site_l06,$$*) $(MATCH_SCRIPT) $(SETUPFILES)
+$(PICKLE)/matched_%.pkl: $$($$*_AERONET) $$(call site_l06,$$*) $(MATCH_SCRIPT) $(SETUPFILES) $(CAMPAIGNS_FILE)
 	@[ -n "$(call site_l06,$*)" ] || { echo "no .L06 files for $*: build them with each campaign's L0.6/scripts/Makefile"; exit 1; }
 	mkdir -p $(PICKLE)
 	$(SETUP) $(MATCH_SCRIPT) --aeronet $($*_AERONET) \
@@ -122,22 +142,31 @@ $(PLOTS)/response_%.png: $(PICKLE)/matched_%.pkl $(FITS)/tempcorr_%.txt $(RESPON
 $(V0): $(MATCHED) $(TEMPCORR) $(V0_SCRIPT) $(RESPONSE_SCRIPT) $(FIT_SCRIPT) $(PLOT_SCRIPT) $(MATCH_SCRIPT) $(SETUPFILES)
 	$(SETUP) $(V0_SCRIPT) $(foreach s,$(SITES),--site $(PICKLE)/matched_$(s).pkl $(FITS)/tempcorr_$(s).txt) -o $@
 
+# edits only the block between write_v0_params.py's BEGIN/END lines, so the rest of calibration.sh is kept
+$(L10_CALIBRATION): $(ROOT)/%/L1.0/setup/calibration.sh: $(V0) $(TEMPCORR) $(WRITE_V0_SCRIPT)
+	$(SETUP) $(WRITE_V0_SCRIPT) $@ $(V0) $(TEMPCORR)
+
 $(FITS)/closure_%.txt: $$($$*_AERONET) $(CLOSURE_SCRIPT) $(V0_SCRIPT) $(MATCH_SCRIPT) $(PLOT_SCRIPT) $(SETUPFILES) $(L10_SETUPFILES) $(L10_DIR)/scripts/seastar_atmosphere.py
 	mkdir -p $(FITS) $(PLOTS)
 	$(SETUP) . $(L10_DIR)/setup/parameters.sh; . $(L10_DIR)/setup/channel_wavelengths.sh; \
 		$(CLOSURE_SCRIPT) $($*_AERONET) --pressure "$$AERONET_PRESSURE_$*" --l10-scripts $(L10_DIR)/scripts \
 		--dropout-fraction "$$AERONET_DROPOUT_FRACTION" -o $@ --plot $(PLOTS)/closure_$*.png
 
-$(FITS)/aod_%$(L10_TAG).txt: $$($$*_AERONET) $$(call site_l10,$$*) $(AOD_SCRIPT) $(PLOT_SCRIPT) $(MATCH_SCRIPT) $(SETUPFILES)
+$(FITS)/aod_%$(L10_TAG).txt: $$($$*_AERONET) $$(call site_l10,$$*) $(AOD_SCRIPT) $(PLOT_SCRIPT) $(MATCH_SCRIPT) $(SETUPFILES) $(CAMPAIGNS_FILE)
 	@[ -n "$(call site_l10,$*)" ] || { echo "no .L10 files for $*: build them with each campaign's L1.0/scripts/Makefile"; exit 1; }
 	$(SETUP) $(AOD_SCRIPT) --aeronet $($*_AERONET) $(foreach f,$(call site_l10,$*),--seastar-l10 $(f)) \
 		--window-seconds "$$WINDOW_SECONDS" --timezone "$$SEASTAR_TIMEZONE" --outdir $(PLOTS) --table $@ \
 		$(if $(L10_TAG),--tag $(L10_TAG))
 
+$(AOD_ALL): $(foreach s,$(SITES),$($(s)_AERONET) $(call site_l10,$(s))) $(AOD_ALL_SCRIPT) $(AOD_SCRIPT) $(PLOT_SCRIPT) $(MATCH_SCRIPT) $(SETUPFILES) $(CAMPAIGNS_FILE)
+	$(SETUP) $(AOD_ALL_SCRIPT) $(foreach s,$(SITES),--site $($(s)_AERONET) $(call site_l10,$(s))) \
+		--window-seconds "$$WINDOW_SECONDS" --outdir $(PLOTS) --table $@ \
+		$(if $(L10_TAG),--tag $(L10_TAG))
+
 clean:
-	rm -f $(MATCHED) $(PLOT_STAMPS) $(PLOTS)/matched_*.png $(TEMPCORR) $(V0) $(CLOSURE) $(PLOTS)/closure_*.png $(FITS)/aod_*.txt $(PLOTS)/aod_*.png $(PLOTS)/tempcorr_*.png $(PLOTS)/response_*.png
+	rm -f $(MATCHED) $(PLOT_STAMPS) $(PLOTS)/matched_*.png $(PLOTS)/matched_*.pdf $(TEMPCORR) $(V0) $(CLOSURE) $(PLOTS)/closure_*.png $(PLOTS)/closure_*.pdf $(FITS)/aod_*.txt $(PLOTS)/aod_*.png $(PLOTS)/aod_*.pdf $(PLOTS)/tempcorr_*.png $(PLOTS)/tempcorr_*.pdf $(PLOTS)/response_*.png $(PLOTS)/response_*.pdf
 
 show:
 	@$(foreach s,$(SITES),echo "$(s): $($(s)_AERONET)"; echo "  $(call site_l06,$(s))";)
 
-.PHONY: all matched plots tempcorr response v0 closure aod clean show
+.PHONY: all matched plots tempcorr response v0 l10_calibration closure aod aod_all clean show

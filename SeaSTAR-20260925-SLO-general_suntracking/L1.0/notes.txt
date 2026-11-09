@@ -1,0 +1,74 @@
+AIRMASS RUNTIME WARNINGS IN L1.0 (2026-11-05)
+
+Seen in the top-level `make -j6`, during this campaign's L1.0 stage:
+
+    seastar_atmosphere.py:42: RuntimeWarning: invalid value encountered ...   (airmass_rayleigh)
+    seastar_atmosphere.py:47: RuntimeWarning: invalid value encountered ...   (airmass_aerosol)
+
+The make still exits 0. The warnings are not a problem with the airmass formulas: they come from a
+bad position in the first timestep of a run. Nothing has been fixed yet.
+
+
+WHAT HAPPENS
+
+Kasten & Young has (96.07995 - zenith) ** -1.6364 and Kasten has (93.885 - zenith) ** -1.253. Past
+those zeniths the base is negative, a negative number to a fractional power is nan, and numpy warns.
+
+Here the zenith is 121 degrees, in timestep 0 of SeaSTAR_2026-09-25_14-32-41: sun_elev -31.05 in the
+middle of the day, from lat 7.047, lon -24.128. The instrument was at 35.235, -120.641.
+
+Cause, checked against the samples in the L05 for that timestep:
+
+- The GPS had no fix yet when the logging started, so the first samples read 0, not nan. Of the 60
+  samples, 10 are nan, 40 are 0 and 10 are 35.235.
+- L05-to-L06_sun.py (lines 83-85) takes np.nanmean of imu_press, imu_lat and imu_lon, so the zeros are
+  averaged in: 35.235 * 10/50 = 7.047, and the same for lon.
+- L06-to-L10_sun.py only treats a position as a dropout if it is exactly 0, so a part-zero average
+  counts as good. It isn't filled or given AOD_POSITION_FILLED, and it goes into solar_position.
+- imu_press is averaged down the same way (20115 Pa against 100574 Pa). That one is caught, by the
+  IMU_PRESS_MIN/MAX bounds, which is probably why nearly every run reports 1 or 2 pressures filled.
+
+
+HOW FAR IT GOES
+
+Timesteps whose position is a part-zero average, in the 20260922 to 20260930 campaigns (sun_elev is
+from the bad position, sun_ephem_elev is the tracker's):
+
+    run                   timesteps   fraction of true lat   sun_elev   sun_ephem_elev   aod_flags
+    2026-09-22_12-10-16   0           0.13                     -3.3        40.2          47
+    2026-09-23_10-30-35   0           0.34                     45.5        38.0          15
+    2026-09-24_10-46-59   0, 1        0.12                     15.6        10.4 (t=1)    31, 15
+    2026-09-25_11-56-10   0           0.63                     52.1         0.0          47
+    2026-09-25_12-00-54   0           0.71                     56.3        34.9          15
+    2026-09-25_14-32-41   0           0.20                    -31.1        45.1          11
+    2026-09-30_07-11-02   0           0.18                     73.5         2.9          47
+    2026-09-30_09-03-17   0           0.86                     40.1        25.3          39
+    2026-09-30_09-32-14   0, 1        0.74                     56.8        30.6 (t=1)    31, 15
+
+2026-09-29_11-58-42 and 2026-09-30_07-08-47 have none. Where two timesteps are listed, timestep 0 is
+all zeros, so it is filled, and np.interp copies the bad position of timestep 1 into it.
+
+Only 14-32-41 gives a nan, because only there is the zenith past the limits. The others have a wrong
+sun position and airmass but no warning.
+
+These were found by comparing each position with a 41-timestep rolling median, looking for lat and
+lon reduced by the same fraction, below 0.995. A timestep with only a few zero samples would be missed.
+No part-zero timesteps turned up later in any run, only at the start.
+
+
+EFFECT ON THE RESULTS
+
+None on the unflagged data so far. All of these timesteps have AOD_TRACKING set, so they drop out of
+both the all-flags screening and the tracking-only AOD plots. That is by luck, though: nothing flags
+the bad position itself, and a run starting with good tracking and a late GPS fix would get through.
+
+It does not explain why 2026-09-25_11-56-10 has 0 of 194 timesteps unflagged. Only one of its
+timesteps is affected.
+
+
+POSSIBLE FIX
+
+In L05-to-L06_sun.py, leave the zero samples out of the means of imu_lat and imu_lon, and imu_press,
+so a timestep averages only its real samples. A timestep with no real samples then needs to stay
+detectable by the good_position test in L06-to-L10_sun.py, which looks for exactly 0. Each campaign
+has its own copy of the script.

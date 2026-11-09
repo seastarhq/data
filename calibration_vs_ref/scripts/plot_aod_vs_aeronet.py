@@ -124,6 +124,7 @@ def plot_day(site, day, l10, aeronet, wavelengths, half_width, timezone, outdir,
     fig.tight_layout(rect=(0, 0, 1, 0.92))
     path = Path(outdir) / f"aod_{site}{tag}_{day}_timeseries.png"
     fig.savefig(path, dpi=120)
+    fig.savefig(path.with_suffix(".pdf"))
     plt.close(fig)
     print(f"  plot: {path}")
 
@@ -159,6 +160,7 @@ def plot_day(site, day, l10, aeronet, wavelengths, half_width, timezone, outdir,
     fig.tight_layout(rect=(0, 0, 1, 0.92))
     path = Path(outdir) / f"aod_{site}{tag}_{day}_scatter.png"
     fig.savefig(path, dpi=120)
+    fig.savefig(path.with_suffix(".pdf"))
     plt.close(fig)
     print(f"  plot: {path}")
     return stats

@@ -107,6 +107,7 @@ def plot_response(data, pairs, site, outdir, correction=None):
     Path(outdir).mkdir(parents=True, exist_ok=True)
     path = Path(outdir) / name
     fig.savefig(path, dpi=110)
+    fig.savefig(path.with_suffix(".pdf"))
     plt.close(fig)
     print(f"  plot: {path}")
 

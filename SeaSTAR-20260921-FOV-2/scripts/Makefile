@@ -8,6 +8,14 @@
 #   make fit        the FOV gridded on the commanded position, with a fitted
 #                   centre per channel: the number to take the centre from
 #   make cuts       x and y cross-sections through the centre at the scan step
+#   make presentation
+#                   the presentation plots: all three of the below
+#   make prescuts   the cuts with 550 and the two 940 nm channels dropped, the
+#                   rest labelled and ordered by wavelength, one column
+#   make qcuts      the same cut drawn against the measured motor angle q1 in
+#                   degrees rather than the commanded stage position
+#   make presfit    the fit plot with 550 and the two 940 nm channels dropped,
+#                   the rest labelled and ordered by wavelength
 #   make timeseries just the time series quicklooks, a figure per subsystem
 #   make windows    redraw and open the interactive FOV figures as well
 #   make show       what make thinks it is working on
@@ -19,6 +27,9 @@ PYTHON ?= /usr/bin/env python
 FOV_SCRIPT = ./processFov.py
 FIT_SCRIPT = ./fitFov.py
 CUT_SCRIPT = ./cutFov.py
+PRES_CUT_SCRIPT = ./cutFov_presentation.py
+Q_CUT_SCRIPT = ./cutFovQ_presentation.py
+PRES_FIT_SCRIPT = ./fitFov_presentation.py
 TS_SCRIPT = ./plotTimeseries.py
 
 RAW_DIR = ../raw
@@ -96,6 +107,35 @@ SETTLE ?= 0.003
 NEIGHBOURS ?= 2
 CUT_FLOOR ?= 0.01
 
+# the presentation cuts keep this many scan steps of background either side of
+# the signal, so the foot of the profile is not clipped:
+CUT_MARGIN ?= 4
+
+# encoder counts in one normalised stage unit, for the second axis across the
+# top of the presentation cuts.  empty leaves that axis off, which is where it
+# stays until the counts scale for the stage is known:
+COUNTS_PER_UNIT ?=
+
+ifneq ($(strip $(COUNTS_PER_UNIT)),)
+COUNTS_FLAG = --counts-per-unit $(COUNTS_PER_UNIT)
+endif
+
+# the motor angle the q cuts are drawn against, and which cut to take.  q1
+# carries the y sweep at ~70 deg per stage unit; q2 barely moves along a row in
+# these scans, so --cut x --angle q2 draws pointing drift, not a profile:
+ANGLE ?= q1
+Q_CUT ?= y
+
+# the angle range in degrees the q cuts are plotted over, and the width of both
+# presentation figures in inches.  empty range spans whatever the drawn cells
+# cover:
+ANGLE_RANGE ?= 44 50
+FIG_WIDTH ?= 6
+
+ifneq ($(strip $(ANGLE_RANGE)),)
+ANGLE_RANGE_FLAG = --angle-range $(ANGLE_RANGE)
+endif
+
 # make never wants the blocking figure windows; the windows target overrides it:
 SHOW_FLAG ?= --no-show
 
@@ -109,6 +149,18 @@ FIT = $(PLOTS_DIR)/$(STEM)_fov_fit.png
 CUTS = $(PLOTS_DIR)/$(STEM)_fov_cuts.png
 
 FOV_PLOTS = $(CONTOURS) $(MAPS) $(FIT) $(CUTS)
+
+# one run of each presentation script draws both its figures, each as a png and
+# a pdf, so they are grouped targets like the contours and maps above:
+PRES_CUTS = $(addprefix $(PLOTS_DIR)/$(STEM)_fov_cuts_presentation,.png .pdf)
+PRES_CHANNEL_CUTS = $(addprefix $(PLOTS_DIR)/$(STEM)_fov_cuts_channels_presentation,.png .pdf)
+
+Q_CUTS = $(addprefix $(PLOTS_DIR)/$(STEM)_fov_cuts_q_presentation,.png .pdf)
+Q_CHANNEL_CUTS = $(addprefix $(PLOTS_DIR)/$(STEM)_fov_cuts_channels_q_presentation,.png .pdf)
+
+PRES_FIT = $(addprefix $(PLOTS_DIR)/$(STEM)_fov_fit_presentation,.png .pdf)
+
+PRESENTATION_PLOTS = $(PRES_CUTS) $(PRES_CHANNEL_CUTS) $(Q_CUTS) $(Q_CHANNEL_CUTS) $(PRES_FIT)
 
 # which time series figures there are depends on what columns the log carries,
 # so they are tracked by a stamp rather than named one by one here:
@@ -126,6 +178,14 @@ maps: $(MAPS)
 fit: $(FIT)
 
 cuts: $(CUTS)
+
+presentation: prescuts qcuts presfit
+
+prescuts: $(PRES_CUTS) $(PRES_CHANNEL_CUTS)
+
+qcuts: $(Q_CUTS) $(Q_CHANNEL_CUTS)
+
+presfit: $(PRES_FIT)
 
 timeseries: $(TS_STAMP)
 
@@ -157,6 +217,36 @@ $(CUTS): $(LOG) $(CUT_SCRIPT)
 		$(CHANNEL_FLAG) \
 		--outdir $(PLOTS_DIR) $(SHOW_FLAG)
 
+# the presentation cuts: the same centroid-centred cut as above, so the notes
+# are not a dependency here either:
+$(PRES_CUTS) $(PRES_CHANNEL_CUTS) &: $(LOG) $(PRES_CUT_SCRIPT)
+	$(PYTHON) $(PRES_CUT_SCRIPT) $(LOG) \
+		--start-log $(START_LOG) \
+		--neighbours $(NEIGHBOURS) --floor $(CUT_FLOOR) --settle $(SETTLE) \
+		--margin $(CUT_MARGIN) $(COUNTS_FLAG) \
+		$(CHANNEL_FLAG) \
+		--outdir $(PLOTS_DIR) $(SHOW_FLAG)
+
+# the same cut against the measured motor angle rather than the commanded
+# position; the script drops the parked runs at each end of the log itself:
+$(Q_CUTS) $(Q_CHANNEL_CUTS) &: $(LOG) $(Q_CUT_SCRIPT)
+	$(PYTHON) $(Q_CUT_SCRIPT) $(LOG) \
+		--start-log $(START_LOG) \
+		--neighbours $(NEIGHBOURS) --floor $(CUT_FLOOR) --settle $(SETTLE) \
+		--margin $(CUT_MARGIN) \
+		--angle $(ANGLE) --cut $(Q_CUT) $(ANGLE_RANGE_FLAG) \
+		--width $(FIG_WIDTH) $(CHANNEL_FLAG) \
+		--outdir $(PLOTS_DIR) $(SHOW_FLAG)
+
+# the fit plot again without 550 and the 940 nm channels; the centre from the
+# notes is only drawn for reference, as above:
+$(PRES_FIT) &: $(LOG) $(NOTES) $(PRES_FIT_SCRIPT)
+	$(PYTHON) $(PRES_FIT_SCRIPT) $(LOG) \
+		--start-log $(START_LOG) \
+		--xcent $(XCENT) --ycent $(YCENT) --settle $(SETTLE) \
+		$(CHANNEL_FLAG) $(EXCLUDE_FLAG) $(WINDOW_FLAG) \
+		--outdir $(PLOTS_DIR) $(SHOW_FLAG)
+
 # every column in the log, whether or not it is named in the script's groups:
 $(TS_STAMP): $(LOG) $(TS_SCRIPT)
 	$(PYTHON) $(TS_SCRIPT) $(LOG) \
@@ -169,7 +259,7 @@ windows:
 	@$(MAKE) --always-make SHOW_FLAG= fov
 
 clean:
-	rm -f $(FOV_PLOTS) $(TS_PLOTS) $(TS_STAMP)
+	rm -f $(FOV_PLOTS) $(PRESENTATION_PLOTS) $(TS_PLOTS) $(TS_STAMP)
 
 # what make thinks it is working on, when the filenames look wrong:
 show:
@@ -180,7 +270,9 @@ show:
 	@echo "channels:   $(if $(strip $(CHANNELS)),$(CHANNELS),all)"
 	@echo "excluded:   $(if $(strip $(EXCLUDE)),$(EXCLUDE),none)"
 	@echo "settle:     $(SETTLE)"
+	@echo "angle:      $(ANGLE), $(Q_CUT) cut over $(if $(strip $(ANGLE_RANGE)),$(ANGLE_RANGE) deg,the drawn cells)"
 	@echo "fov plots:  $(FOV_PLOTS)"
+	@echo "pres plots: $(PRESENTATION_PLOTS)"
 	@echo "ts plots:   $(TS_PLOTS)"
 
-.PHONY: all fov contours maps fit cuts timeseries windows clean show
+.PHONY: all fov contours maps fit cuts presentation prescuts qcuts presfit timeseries windows clean show

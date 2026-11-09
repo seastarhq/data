@@ -111,6 +111,7 @@ def plot_timeseries(data, pairs, site, day, timezone, outdir):
     fig.tight_layout(rect=(0, 0, 1, 0.94))
     path = Path(outdir) / f"matched_{site}_{day}_timeseries.png"
     fig.savefig(path, dpi=130)
+    fig.savefig(path.with_suffix(".pdf"))
     plt.close(fig)
     print(f"  plot: {path}")
 
@@ -137,6 +138,7 @@ def plot_scatter(data, pairs, site, days, outdir):
     fig.tight_layout(rect=(0, 0, 1, 0.94))
     path = Path(outdir) / f"matched_{site}_scatter.png"
     fig.savefig(path, dpi=130)
+    fig.savefig(path.with_suffix(".pdf"))
     plt.close(fig)
     print(f"  plot: {path}")
 

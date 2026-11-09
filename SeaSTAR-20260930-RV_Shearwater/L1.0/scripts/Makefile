@@ -26,12 +26,26 @@ AOD_PLOT_SCREEN ?= tracking
 # and leaving out the timesteps with bad tracking entirely
 AOD_PLOT_OPTIONS ?= --ymax 0.3 --xmin 10:30 --hide-undefined --tracked-only
 AOD_PLOT=../plots/aod_$(AOD_PLOT_NM)nm$(L10_TAG).stamp
-# overlaid with the campaign's Microtops L1.5 groups file, if there is one
+# the Angstrom exponent plot (plot_angstrom.py): every run on one figure, screened for sun tracking only
+ANGSTROM_PLOT_SCREEN ?= tracking
+ANGSTROM_PLOT_OPTIONS ?= --ymin -0.2 --xmin 10:30
+ANGSTROM_PLOT=../plots/angstrom$(L10_TAG).stamp
+# the two together (plot_aod_angstrom.py): the AOD above the Angstrom exponent, on one time axis
+COMBINED_PLOT_SCREEN ?= tracking
+COMBINED_PLOT_OPTIONS ?= --aod-ymax 0.3 --angstrom-ymin -0.2 --xmin 10:30
+COMBINED_PLOT=../plots/aod_$(AOD_PLOT_NM)nm_angstrom$(L10_TAG).stamp
+# the GPS track on a map (plot_track.py): every run together. needs cartopy
+TRACK_PLOT=../plots/track.stamp
+# zoomed-in maps of the track coloured by AOD and Angstrom exponent (plot_track_aod.py). needs cartopy
+TRACK_AOD_PLOT_SCREEN ?= tracking
+TRACK_AOD_PLOT_OPTIONS ?= --start 13:30
+TRACK_AOD_PLOT=../plots/track_aod_$(AOD_PLOT_NM)nm_angstrom$(L10_TAG).stamp
+# the AOD and exponent plots are overlaid with the campaign's Microtops L1.5 groups file, if there is one
 MICROTOPS=$(firstword $(wildcard ../../microtops/*_L15_groups_*.txt))
 
 all: $(L10_FILES) plots
 
-plots: $(AOD_PLOT)
+plots: $(AOD_PLOT) $(ANGSTROM_PLOT) $(COMBINED_PLOT) $(TRACK_PLOT) $(TRACK_AOD_PLOT)
 
 L10: $(L10_FILES)
 
@@ -43,6 +57,22 @@ $(PICKLE)/SeaSTAR_%$(L10_TAG).L10: $(PICKLE)/SeaSTAR_%.L06 $(SCRIPTS) $(MODULES)
 # the plot is named after the date in the data, so it's tracked by a stamp
 $(AOD_PLOT): $(L10_FILES) ./plot_aod.py $(MODULES) $(PARAMFILES) $(MICROTOPS)
 	$(SETUP) ./plot_aod.py $(notdir $(L10_FILES)) --nm $(AOD_PLOT_NM) --screen $(AOD_PLOT_SCREEN) $(AOD_PLOT_OPTIONS) $(if $(MICROTOPS),--microtops $(MICROTOPS))
+	@touch $@
+
+$(ANGSTROM_PLOT): $(L10_FILES) ./plot_angstrom.py $(MODULES) $(PARAMFILES) $(MICROTOPS)
+	$(SETUP) ./plot_angstrom.py $(notdir $(L10_FILES)) --screen $(ANGSTROM_PLOT_SCREEN) $(ANGSTROM_PLOT_OPTIONS) $(if $(MICROTOPS),--microtops $(MICROTOPS))
+	@touch $@
+
+$(COMBINED_PLOT): $(L10_FILES) ./plot_aod_angstrom.py $(MODULES) $(PARAMFILES) $(MICROTOPS)
+	$(SETUP) ./plot_aod_angstrom.py $(notdir $(L10_FILES)) --nm $(AOD_PLOT_NM) --screen $(COMBINED_PLOT_SCREEN) $(COMBINED_PLOT_OPTIONS) $(if $(MICROTOPS),--microtops $(MICROTOPS))
+	@touch $@
+
+$(TRACK_PLOT): $(L10_FILES) ./plot_track.py $(MODULES) $(PARAMFILES)
+	$(SETUP) ./plot_track.py $(notdir $(L10_FILES))
+	@touch $@
+
+$(TRACK_AOD_PLOT): $(L10_FILES) ./plot_track_aod.py $(MODULES) $(PARAMFILES)
+	$(SETUP) ./plot_track_aod.py $(notdir $(L10_FILES)) --nm $(AOD_PLOT_NM) --screen $(TRACK_AOD_PLOT_SCREEN) $(TRACK_AOD_PLOT_OPTIONS)
 	@touch $@
 
 .DELETE_ON_ERROR:

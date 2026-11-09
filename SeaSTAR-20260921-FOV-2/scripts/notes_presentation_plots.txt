@@ -1,0 +1,169 @@
+notes on the presentation FOV cut plots
+2026-11-05, SeaSTAR-20260921-FOV-2
+
+three scripts, two derived from cutFov.py and one from fitFov.py, all left
+alone by the default `make` so the quicklooks are unchanged.  `make
+presentation` builds all three, `make prescuts`, `make qcuts` and `make presfit`
+build one each.
+
+
+cutFov_presentation.py
+----------------------
+the cross-sections as cutFov.py draws them, with the channels relabelled and
+the figure recast for showing to people.  writes
+
+	<stem>_fov_cuts_presentation.png           the overlay, x cut and y cut
+	<stem>_fov_cuts_channels_presentation.png  one channel per row
+
+and a .pdf of the same name beside each.
+
+channels.  ch8 and ch9 are the two 940 nm channels, in the water vapour band,
+and ch4 is 550 nm; all three are dropped (excludedChannels at the top of the
+script).  seven are left.  the mapping comes from
+
+	hardware/configuration-sept-2026.md
+	../../SeaSTAR-20260923-Ames-general_suntracking/L0.6/setup/channel_wavelengths.sh
+
+	ch1 380   ch2 440   ch3 500   ch4 550   ch5  675
+	ch6 340   ch7 870   ch8 940   ch9 940   ch10 1020
+
+and is repeated in channelWavelengths in the script.  the plots are labelled
+by wavelength, not by channel, and sorted by wavelength rather than by channel
+number, so they run 340, 380, 440, 500, 675, 870, 1020.  the startup line still
+prints both ("ch6 (340 nm), ...") so a label can be tied back to a log column.
+a channel with no entry in the table falls to the end of the order and keeps
+its ch<N> label.
+
+range.  the auto-trimmed span was clipping the foot of the profile, badly on
+the y cut, so --margin (default 4) keeps that many scan steps of background
+either side of where the signal is.  clamped to the scan, so asking for more
+than was scanned just plots the whole range.
+
+layout.  the per-channel figure is one column of channels, two panels a row
+(x cut, y cut).  the old two-halves-side-by-side layout and its spacer column
+are gone.
+
+titles.  none of the presentation figures has a title or a suptitle, in either
+script; the slide carries that.  each panel of a per-channel figure has its
+wavelength written inside the top left corner instead, since nothing else says
+which channel a row is.
+
+--counts-per-unit would add a second x axis across the top in encoder counts.
+it is off and stays off: nothing in this repo gives a counts scale for the
+stage.  sx/sy/tx/ty are a normalised 0-1 commanded position, the notes give
+the scan ranges in those same units, and q1/q2 are the tracker's pointing in
+degrees, not stage counts.  the plumbing is there if the scale turns up.
+
+
+cutFovQ_presentation.py
+-----------------------
+the same cut drawn against the measured motor angle in degrees instead of the
+commanded stage position.  writes
+
+	<stem>_fov_cuts_q_presentation.png           the overlay, one panel
+	<stem>_fov_cuts_channels_q_presentation.png  one channel per row
+
+and a .pdf of the same name beside each.
+
+method.  cells are still assigned on the commanded (tx, ty) grid, which is
+exact; only the position each cell is drawn at changes, to the mean of the
+angle over that cell's settled samples.  each drawn cut carries its own
+angles, since a neighbouring row or column was scanned at a different time and
+so at a different pointing.
+
+q1 carries the scan, q2 does not.  from the 14:33 log:
+
+	y cut (one column, fixed tx, about 2 minutes):
+		q1 sweeps 43.4 -> 50.2 deg, monotonic, ~71 deg per stage unit,
+		while the sun moves 0.3 deg.  this is a real FOV profile.
+
+	x cut (one row, fixed ty, spread over the whole 46 minutes):
+		q2 sits at 92.04-92.25 deg, 0.211 deg of non-monotonic wobble,
+		no scan in it, while q1 slews 6.8 deg just following the sun's
+		azimuth.  plotted, it is spaghetti.
+
+so the x scan is not executed by q2.  the script therefore draws one cut only,
+the y cut against q1 by default.  --cut x and --angle q2 still reach the other
+combinations for checking; the script prints the span and monotonicity of
+whichever axis it drew and warns when it spans under a degree.
+
+parked rows.  the log opens with 1966 rows and closes with 3629 rows parked at
+the commanded centre while the tracker runs.  those land in the centre cell,
+which is the centre point of the cut, and swamp its mean angle (q1 45.77 deg
+against a neighbour trend of about 46.9).  the script drops the stationary run
+at each end by default, keeping the raster's own visit to that cell;
+--keep-park disables it.  this matters only for the angle, but it cleans the
+centre cell's channel average too.
+
+axis.  --angle-range LO HI sets the view, 44 50 by default here; it crops only,
+the cells drawn and the trimming are unchanged.  labelled ticks every degree,
+unlabelled minor ticks and a light gridline every half degree (--minor-tick,
+0 turns them off).  skipped on an axis too narrow to hold two of them, which
+is what the degenerate q2 cut needs.  --width sets both figures' width in
+inches, 6 by default.
+
+
+fitFov_presentation.py
+----------------------
+the fit plot fitFov.py draws, with ch4, ch8 and ch9 dropped and the rest
+labelled and sorted by wavelength.  writes
+
+	<stem>_fov_fit_presentation.png    one panel per channel, and the legend
+
+and a .pdf of the same name beside it.
+
+channels.  the same seven as the cut plots; excludedChannels is at the top of
+the script.  the dropped channels are not fitted at all, so they
+leave the averaged centre as well as the figure, and the centre in the legend
+is not the one on the quicklook.
+
+layout.  four across, so seven channels and the legend fill a 2 x 4 grid.  no
+titles, as with the other presentation plots: the wavelength is written inside
+the top left of each panel.  the peak and the fwhm that were in the quicklook's
+panel titles go to the printed table instead.  the axes read x and y, as on the
+cuts, rather than tx and ty.
+
+axis scale.  x and y are not drawn to the same scale.  the spot is about 1.4
+times wider in stage y than stage x, so a unit of x is drawn that much longer
+than a unit of y, which makes the half maximum contours come out round and the
+panels square.  the scale is the median fwhm ratio of the channels drawn, one
+value for all of them; it is printed when the script runs, but is not on the
+plot.  round here is by construction, so it says nothing about whether the FOV is round on
+the sky: there is no angle scale for x to check that with (see the q2 note
+above).  --window is the half-width in x; y gets that times the scale.
+
+
+make
+----
+	make presentation      all three scripts
+	make prescuts          cutFov_presentation.py only
+	make qcuts             cutFovQ_presentation.py only
+	make presfit           fitFov_presentation.py only
+
+variables, over and above the START_LOG / SETTLE / NEIGHBOURS / CUT_FLOOR /
+CHANNELS the quicklooks already use, so the two sets of plots stay consistent:
+
+	CUT_MARGIN       4          background steps kept either side
+	COUNTS_PER_UNIT  (empty)    counts axis, off; see above
+	ANGLE            q1         motor angle the q cuts use
+	Q_CUT            y          which cut to take
+	ANGLE_RANGE      44 50      degrees plotted; empty = the drawn cells
+	FIG_WIDTH        6          width of both presentation figures
+
+`make clean` removes these plots too.  `make show` prints them and the angle
+settings.
+
+
+watch out for
+-------------
+- colours are assigned by position in the channel list, so changing which
+  channels are excluded shifts them.  dropping 550 nm moved 675 to purple,
+  870 to brown and 1020 to pink.  the two presentation figures always agree
+  with each other, but not with an older copy of either.
+- on the q axis the faint neighbour cuts spread much wider than the centre
+  cut.  that is real: neighbouring columns were scanned minutes apart, so the
+  sun's motion offsets their q1 and shifts them sideways.  on the commanded
+  position axis they sat on top of each other.  --neighbours 0 drops them.
+- the q plots are specific to this scan's geometry.  before reusing them on
+  another log, check the printed span and monotonicity line, and that the
+  parked-row count looks like the park and not the scan.

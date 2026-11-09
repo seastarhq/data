@@ -233,6 +233,7 @@ def main():
         fig.tight_layout(rect=(0, 0, 1, 0.95))
         plot_path = Path(args.plotdir) / f"tempcorr_{site}_{method}.png"
         fig.savefig(plot_path, dpi=110)
+        fig.savefig(plot_path.with_suffix(".pdf"))
         plt.close(fig)
         print(f"  plot: {plot_path}")
 

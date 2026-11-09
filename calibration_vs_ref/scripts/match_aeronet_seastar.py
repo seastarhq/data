@@ -508,6 +508,7 @@ def main():
                 tag = v_stem.replace("*_", "").replace("(", "").replace(")", "")
                 fname = Path(args.plots_dir) / f"ch{ch_num}_{wl}nm_vs_{tag}.png"
                 fig.savefig(fname, dpi=110)
+                fig.savefig(fname.with_suffix(".pdf"))
                 plt.close(fig)
                 print(f"  plot: {fname}")
 

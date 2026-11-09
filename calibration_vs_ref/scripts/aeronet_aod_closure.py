@@ -143,6 +143,7 @@ def main():
         fig.tight_layout()
         Path(args.plot).parent.mkdir(parents=True, exist_ok=True)
         fig.savefig(args.plot, dpi=110)
+        fig.savefig(Path(args.plot).with_suffix(".pdf"))
         plt.close(fig)
         print(f"  plot: {args.plot}")
 
